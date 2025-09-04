@@ -1,0 +1,2052 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Parkease - Smart Parking & Traffic Insights</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        :root {
+            --primary: #00d4ff;
+            --primary-dark: #0099cc;
+            --secondary: #00ff88;
+            --dark: #0a0a0a;
+            --card-dark: #111111;
+            --border: #222222;
+            --light: #ffffff;
+            --gray: #666666;
+            --gray-light: #999999;
+            --accent: #ff4757;
+            --warning: #ffa502;
+            --purple: #a55eea;
+            --gradient-1: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            --gradient-2: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+            --gradient-3: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+            --glass: rgba(255, 255, 255, 0.05);
+            --glass-border: rgba(255, 255, 255, 0.1);
+        }
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Inter', sans-serif;
+            color: var(--light);
+            line-height: 1.6;
+            background-color: var(--dark);
+            overflow-x: hidden;
+        }
+        
+        h1, h2, h3, h4, h5 {
+            font-family: 'Inter', sans-serif;
+            font-weight: 700;
+        }
+        
+        .container {
+            width: 100%;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 20px;
+        }
+        
+        /* Glassmorphism utility */
+        .glass {
+            background: var(--glass);
+            backdrop-filter: blur(20px);
+            border: 1px solid var(--glass-border);
+        }
+        
+        /* Header & Navigation */
+        header {
+            background: var(--glass);
+            backdrop-filter: blur(20px);
+            border-bottom: 1px solid var(--border);
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+        }
+        
+        .navbar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 20px 0;
+        }
+        
+        .logo {
+            display: flex;
+            align-items: center;
+            font-size: 24px;
+            font-weight: 700;
+            color: var(--primary);
+            text-decoration: none;
+        }
+        
+        .logo i {
+            margin-right: 10px;
+            transition: transform 0.5s ease;
+            filter: drop-shadow(0 0 10px var(--primary));
+        }
+        
+        .logo:hover i {
+            transform: rotate(360deg) scale(1.1);
+            filter: drop-shadow(0 0 20px var(--primary));
+        }
+        
+        .nav-links {
+            display: flex;
+            list-style: none;
+        }
+        
+        .nav-links li {
+            margin-left: 30px;
+            position: relative;
+        }
+        
+        .nav-links li::after {
+            content: '';
+            position: absolute;
+            bottom: -5px;
+            left: 0;
+            width: 0;
+            height: 3px;
+            background: var(--gradient-3);
+            transition: width 0.3s ease;
+            border-radius: 2px;
+        }
+        
+        .nav-links li:hover::after {
+            width: 100%;
+        }
+        
+        .nav-links a {
+            text-decoration: none;
+            color: var(--light);
+            font-weight: 500;
+            transition: all 0.3s;
+            position: relative;
+        }
+        
+        .nav-links a:hover {
+            color: var(--primary);
+            text-shadow: 0 0 10px var(--primary);
+        }
+        
+        .login-btn {
+            background: var(--gradient-3);
+            color: white;
+            border: none;
+            padding: 12px 25px;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            box-shadow: 0 4px 15px rgba(0, 212, 255, 0.3);
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .login-btn::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent);
+            transition: 0.5s;
+        }
+        
+        .login-btn:hover::before {
+            left: 100%;
+        }
+        
+        .login-btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 25px rgba(0, 212, 255, 0.4);
+        }
+        
+        /* Hero Section */
+        .hero {
+            padding: 120px 0;
+            background: radial-gradient(ellipse at center, #1a1a1a 0%, var(--dark) 100%);
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .hero::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 1000"><defs><radialGradient id="g"><stop offset="20%" stop-color="%2300d4ff" stop-opacity="0.1"/><stop offset="50%" stop-color="%2300ff88" stop-opacity="0.05"/><stop offset="100%" stop-color="transparent"/></radialGradient></defs><circle cx="200" cy="200" r="100" fill="url(%23g)"/><circle cx="800" cy="300" r="150" fill="url(%23g)"/><circle cx="400" cy="700" r="120" fill="url(%23g)"/></svg>');
+            animation: float 20s ease-in-out infinite;
+        }
+        
+        @keyframes float {
+            0%, 100% { transform: translateY(0px); }
+            50% { transform: translateY(-20px); }
+        }
+        
+        .hero h1 {
+            font-size: 3.5rem;
+            margin-bottom: 20px;
+            background: var(--gradient-3);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            opacity: 0;
+            transform: translateY(30px);
+            animation: fadeInUp 1.2s ease forwards 0.5s;
+            position: relative;
+            z-index: 2;
+        }
+        
+        .hero p {
+            font-size: 1.4rem;
+            max-width: 700px;
+            margin: 0 auto 40px;
+            color: var(--gray-light);
+            opacity: 0;
+            transform: translateY(30px);
+            animation: fadeInUp 1.2s ease forwards 0.8s;
+            position: relative;
+            z-index: 2;
+        }
+        
+        .cta-buttons {
+            display: flex;
+            justify-content: center;
+            gap: 25px;
+            opacity: 0;
+            transform: translateY(30px);
+            animation: fadeInUp 1.2s ease forwards 1.1s;
+            position: relative;
+            z-index: 2;
+        }
+        
+        @keyframes fadeInUp {
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        
+        .btn {
+            padding: 15px 35px;
+            border-radius: 10px;
+            font-weight: 600;
+            text-decoration: none;
+            transition: all 0.4s;
+            display: inline-block;
+            position: relative;
+            overflow: hidden;
+            font-size: 1.1rem;
+        }
+        
+        .btn::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+            transition: 0.6s;
+        }
+        
+        .btn:hover::before {
+            left: 100%;
+        }
+        
+        .btn-primary {
+            background: var(--gradient-3);
+            color: white;
+            box-shadow: 0 8px 25px rgba(0, 212, 255, 0.4);
+        }
+        
+        .btn-primary:hover {
+            transform: translateY(-3px) scale(1.05);
+            box-shadow: 0 15px 35px rgba(0, 212, 255, 0.5);
+        }
+        
+        .btn-outline {
+            border: 2px solid var(--primary);
+            color: var(--primary);
+            background: transparent;
+        }
+        
+        .btn-outline:hover {
+            background: var(--primary);
+            color: var(--dark);
+            transform: translateY(-3px) scale(1.05);
+            box-shadow: 0 15px 35px rgba(0, 212, 255, 0.3);
+        }
+        
+        /* Features Section */
+        .features {
+            padding: 100px 0;
+            background: var(--dark);
+            position: relative;
+        }
+        
+        .features::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><defs><pattern id="grid" width="10" height="10" patternUnits="userSpaceOnUse"><path d="M 10 0 L 0 0 0 10" fill="none" stroke="%23333" stroke-width="0.5" opacity="0.3"/></pattern></defs><rect width="100" height="100" fill="url(%23grid)"/></svg>');
+            opacity: 0.3;
+        }
+        
+        .section-title {
+            text-align: center;
+            margin-bottom: 80px;
+            position: relative;
+            z-index: 2;
+        }
+        
+        .section-title h2 {
+            font-size: 2.8rem;
+            margin-bottom: 20px;
+            background: var(--gradient-3);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            position: relative;
+            display: inline-block;
+        }
+        
+        .section-title h2::after {
+            content: '';
+            position: absolute;
+            bottom: -15px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 80px;
+            height: 4px;
+            background: var(--gradient-3);
+            border-radius: 2px;
+        }
+        
+        .section-title p {
+            color: var(--gray-light);
+            max-width: 700px;
+            margin: 0 auto;
+            font-size: 1.2rem;
+        }
+        
+        .features-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 40px;
+            position: relative;
+            z-index: 2;
+        }
+        
+        .feature-card {
+            background: var(--glass);
+            backdrop-filter: blur(20px);
+            border: 1px solid var(--glass-border);
+            border-radius: 15px;
+            padding: 40px 30px;
+            text-align: center;
+            transition: all 0.5s ease;
+            opacity: 0;
+            transform: translateY(30px);
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .feature-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 2px;
+            background: var(--gradient-3);
+            transform: scaleX(0);
+            transition: transform 0.5s ease;
+        }
+        
+        .feature-card:hover::before {
+            transform: scaleX(1);
+        }
+        
+        .feature-card.animate {
+            animation: slideInUp 0.8s ease forwards;
+        }
+        
+        @keyframes slideInUp {
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        
+        .feature-card:nth-child(2) { animation-delay: 0.2s; }
+        .feature-card:nth-child(3) { animation-delay: 0.4s; }
+        .feature-card:nth-child(4) { animation-delay: 0.6s; }
+        
+        .feature-card:hover {
+            transform: translateY(-10px) scale(1.02);
+            background: rgba(255, 255, 255, 0.08);
+            box-shadow: 0 25px 50px rgba(0, 212, 255, 0.2);
+        }
+        
+        .feature-icon {
+            font-size: 3rem;
+            margin-bottom: 25px;
+            background: var(--gradient-3);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            transition: all 0.5s ease;
+            filter: drop-shadow(0 0 10px rgba(0, 212, 255, 0.3));
+        }
+        
+        .feature-card:hover .feature-icon {
+            transform: scale(1.2) rotateY(360deg);
+            filter: drop-shadow(0 0 20px rgba(0, 212, 255, 0.5));
+        }
+        
+        .feature-card h3 {
+            margin-bottom: 15px;
+            font-size: 1.5rem;
+            color: var(--light);
+        }
+        
+        .feature-card p {
+            color: var(--gray-light);
+            line-height: 1.7;
+        }
+        
+        /* Enhanced Slideshow Section */
+        .slideshow {
+            padding: 100px 0;
+            background: var(--dark);
+            position: relative;
+        }
+        
+        .slideshow::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: radial-gradient(circle at 20% 80%, rgba(0, 212, 255, 0.1) 0%, transparent 50%),
+                        radial-gradient(circle at 80% 20%, rgba(0, 255, 136, 0.1) 0%, transparent 50%);
+            animation: backgroundShift 15s ease-in-out infinite;
+        }
+        
+        @keyframes backgroundShift {
+            0%, 100% { opacity: 0.5; }
+            50% { opacity: 0.8; }
+        }
+        
+        .slideshow-container {
+            max-width: 1100px;
+            position: relative;
+            margin: auto;
+            height: 500px;
+            border-radius: 20px;
+            overflow: hidden;
+            box-shadow: 0 25px 50px rgba(0, 0, 0, 0.5);
+            background: var(--card-dark);
+            border: 1px solid var(--border);
+        }
+        
+        .mySlides {
+            display: none;
+            height: 100%;
+            position: relative;
+            animation: slideInFade 1s ease-in-out;
+        }
+        
+        @keyframes slideInFade {
+            from { opacity: 0; transform: scale(1.1); }
+            to { opacity: 1; transform: scale(1); }
+        }
+        
+        .mySlides img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            filter: brightness(0.7) contrast(1.1);
+            transition: all 0.5s ease;
+        }
+        
+        .mySlides:hover img {
+            filter: brightness(0.8) contrast(1.2);
+            transform: scale(1.05);
+        }
+        
+        .slide-content {
+            position: absolute;
+            bottom: 0;
+            background: linear-gradient(transparent, rgba(0, 0, 0, 0.9));
+            color: white;
+            width: 100%;
+            padding: 40px;
+            text-align: center;
+            backdrop-filter: blur(10px);
+        }
+        
+        .slide-content h3 {
+            font-size: 2rem;
+            margin-bottom: 10px;
+            background: var(--gradient-3);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        
+        .slide-content p {
+            font-size: 1.1rem;
+            color: rgba(255, 255, 255, 0.9);
+        }
+        
+        .prev, .next {
+            cursor: pointer;
+            position: absolute;
+            top: 50%;
+            width: 60px;
+            height: 60px;
+            margin-top: -30px;
+            color: white;
+            font-weight: bold;
+            font-size: 24px;
+            transition: all 0.4s ease;
+            border-radius: 50%;
+            user-select: none;
+            background: var(--glass);
+            backdrop-filter: blur(10px);
+            border: 1px solid var(--glass-border);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 10;
+        }
+        
+        .next {
+            right: 20px;
+        }
+        
+        .prev {
+            left: 20px;
+        }
+        
+        .prev:hover, .next:hover {
+            background: rgba(0, 212, 255, 0.3);
+            transform: scale(1.1);
+            box-shadow: 0 0 20px rgba(0, 212, 255, 0.5);
+        }
+        
+        .dots {
+            text-align: center;
+            margin-top: 30px;
+            position: relative;
+            z-index: 2;
+        }
+        
+        .dot {
+            cursor: pointer;
+            height: 15px;
+            width: 15px;
+            margin: 0 8px;
+            background-color: var(--gray);
+            border-radius: 50%;
+            display: inline-block;
+            transition: all 0.4s ease;
+            border: 2px solid transparent;
+        }
+        
+        .active, .dot:hover {
+            background: var(--primary);
+            transform: scale(1.3);
+            box-shadow: 0 0 15px var(--primary);
+        }
+        
+        /* Booking Section */
+        .booking {
+            padding: 100px 0;
+            background: var(--card-dark);
+            position: relative;
+        }
+        
+        .booking::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><defs><pattern id="circuit" width="20" height="20" patternUnits="userSpaceOnUse"><circle cx="5" cy="5" r="1" fill="%2300d4ff" opacity="0.3"/><path d="M5,5 L15,5 M15,5 L15,15 M15,15 L5,15" stroke="%2300d4ff" stroke-width="0.5" opacity="0.2" fill="none"/></pattern></defs><rect width="100" height="100" fill="url(%23circuit)"/></svg>');
+        }
+        
+        .booking-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            position: relative;
+            z-index: 2;
+        }
+        
+        .search-box {
+            width: 100%;
+            max-width: 700px;
+            display: flex;
+            margin-bottom: 50px;
+            border-radius: 15px;
+            overflow: hidden;
+            transition: all 0.4s ease;
+            background: var(--glass);
+            backdrop-filter: blur(20px);
+            border: 1px solid var(--glass-border);
+        }
+        
+        .search-box:focus-within {
+            transform: translateY(-5px);
+            box-shadow: 0 20px 40px rgba(0, 212, 255, 0.2);
+            border-color: var(--primary);
+        }
+        
+        .search-input {
+            flex: 1;
+            padding: 20px 25px;
+            border: none;
+            background: transparent;
+            color: var(--light);
+            font-size: 1.1rem;
+            transition: all 0.3s ease;
+        }
+        
+        .search-input::placeholder {
+            color: var(--gray);
+        }
+        
+        .search-input:focus {
+            outline: none;
+            color: var(--light);
+        }
+        
+        .search-btn {
+            background: var(--gradient-3);
+            color: white;
+            border: none;
+            padding: 0 30px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            font-size: 1.1rem;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .search-btn::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent);
+            transition: 0.5s;
+        }
+        
+        .search-btn:hover::before {
+            left: 100%;
+        }
+        
+        .search-btn:hover {
+            background: var(--primary-dark);
+            transform: scale(1.05);
+        }
+        
+        .map-container {
+            width: 100%;
+            height: 450px;
+            background: var(--glass);
+            backdrop-filter: blur(20px);
+            border: 1px solid var(--glass-border);
+            border-radius: 20px;
+            overflow: hidden;
+            position: relative;
+            transition: all 0.5s ease;
+        }
+        
+        .map-container:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 25px 50px rgba(0, 212, 255, 0.2);
+        }
+        
+        .map-overlay {
+            position: absolute;
+            top: 30px;
+            left: 30px;
+            background: var(--glass);
+            backdrop-filter: blur(20px);
+            border: 1px solid var(--glass-border);
+            padding: 20px;
+            border-radius: 12px;
+            z-index: 10;
+            transition: all 0.3s ease;
+        }
+        
+        .map-overlay:hover {
+            background: rgba(255, 255, 255, 0.1);
+            transform: scale(1.05);
+        }
+        
+        .map-overlay h3 {
+            color: var(--primary);
+            margin-bottom: 5px;
+            font-size: 1.3rem;
+        }
+        
+        .map-overlay p {
+            color: var(--gray-light);
+            font-size: 1rem;
+        }
+        
+        /* Dashboard Section */
+        .dashboard {
+            padding: 100px 0;
+            background: var(--dark);
+            position: relative;
+        }
+        
+        .dashboard::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: radial-gradient(circle at 70% 30%, rgba(165, 94, 234, 0.1) 0%, transparent 50%),
+                        radial-gradient(circle at 30% 70%, rgba(255, 71, 87, 0.1) 0%, transparent 50%);
+        }
+        
+        .dashboard-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(500px, 1fr));
+            gap: 40px;
+            position: relative;
+            z-index: 2;
+        }
+        
+        .dashboard-card {
+            background: var(--glass);
+            backdrop-filter: blur(20px);
+            border: 1px solid var(--glass-border);
+            border-radius: 20px;
+            padding: 35px;
+            transition: all 0.5s ease;
+            opacity: 0;
+            transform: translateY(30px);
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .dashboard-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(0, 212, 255, 0.1), transparent);
+            transition: 0.8s;
+        }
+        
+        .dashboard-card:hover::before {
+            left: 100%;
+        }
+        
+        .dashboard-card.animate {
+            animation: slideInUp 0.8s ease forwards;
+        }
+        
+        .dashboard-card:nth-child(2) { animation-delay: 0.2s; }
+        .dashboard-card:nth-child(3) { animation-delay: 0.4s; }
+        .dashboard-card:nth-child(4) { animation-delay: 0.6s; }
+        
+        .dashboard-card:hover {
+            transform: translateY(-10px) scale(1.02);
+            background: rgba(255, 255, 255, 0.08);
+            box-shadow: 0 25px 50px rgba(0, 212, 255, 0.3);
+        }
+        
+        .dashboard-card h3 {
+            margin-bottom: 25px;
+            color: var(--primary);
+            display: flex;
+            align-items: center;
+            font-size: 1.4rem;
+        }
+        
+        .dashboard-card h3 i {
+            margin-right: 12px;
+            font-size: 1.5rem;
+            filter: drop-shadow(0 0 8px currentColor);
+        }
+        
+        .chart-container {
+            height: 280px;
+            position: relative;
+        }
+        
+        /* Roadmap Section */
+        .roadmap {
+            padding: 100px 0;
+            background: var(--card-dark);
+            position: relative;
+        }
+        
+        .roadmap::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200"><defs><linearGradient id="roadmapGrad" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stop-color="%2300d4ff" stop-opacity="0.1"/><stop offset="100%" stop-color="%2300ff88" stop-opacity="0.1"/></linearGradient></defs><circle cx="50" cy="50" r="30" fill="url(%23roadmapGrad)"/><circle cx="150" cy="150" r="40" fill="url(%23roadmapGrad)"/></svg>');
+            animation: float 20s ease-in-out infinite;
+        }
+        
+        .roadmap-items {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 80px;
+            position: relative;
+            z-index: 2;
+        }
+        
+        .roadmap-items::before {
+            content: '';
+            position: absolute;
+            top: 60px;
+            left: 15%;
+            right: 15%;
+            height: 3px;
+            background: var(--gradient-3);
+            z-index: 1;
+            border-radius: 2px;
+            box-shadow: 0 0 15px rgba(0, 212, 255, 0.5);
+        }
+        
+        .roadmap-item {
+            text-align: center;
+            position: relative;
+            z-index: 2;
+            width: 30%;
+            opacity: 0;
+            transform: translateY(30px);
+            transition: all 0.3s ease;
+        }
+        
+        .roadmap-item:hover {
+            transform: translateY(-10px);
+        }
+        
+        .roadmap-item.animate {
+            animation: slideInUp 0.8s ease forwards;
+        }
+        
+        .roadmap-item:nth-child(1) { animation-delay: 0.2s; }
+        .roadmap-item:nth-child(2) { animation-delay: 0.4s; }
+        .roadmap-item:nth-child(3) { animation-delay: 0.6s; }
+        
+        .roadmap-icon {
+            width: 100px;
+            height: 100px;
+            background: var(--gradient-3);
+            color: white;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 2.2rem;
+            margin: 0 auto 25px;
+            transition: all 0.6s ease;
+            box-shadow: 0 10px 30px rgba(0, 212, 255, 0.4);
+            border: 3px solid var(--glass-border);
+        }
+        
+        .roadmap-item:hover .roadmap-icon {
+            transform: scale(1.15) rotateY(360deg);
+            box-shadow: 0 20px 40px rgba(0, 212, 255, 0.6);
+            background: var(--gradient-2);
+        }
+        
+        .roadmap-item h3 {
+            margin-bottom: 15px;
+            color: var(--light);
+            font-size: 1.4rem;
+        }
+        
+        .roadmap-item p {
+            color: var(--gray-light);
+            line-height: 1.7;
+        }
+        
+        /* Footer */
+        footer {
+            background: var(--dark);
+            color: white;
+            padding: 80px 0 40px;
+            border-top: 1px solid var(--border);
+            position: relative;
+        }
+        
+        footer::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(45deg, rgba(0, 212, 255, 0.03) 0%, rgba(0, 255, 136, 0.03) 100%);
+        }
+        
+        .footer-content {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 50px;
+            margin-bottom: 50px;
+            position: relative;
+            z-index: 2;
+        }
+        
+        .footer-column h3 {
+            margin-bottom: 25px;
+            font-size: 1.4rem;
+            color: var(--primary);
+            position: relative;
+        }
+        
+        .footer-column h3::after {
+            content: '';
+            position: absolute;
+            bottom: -8px;
+            left: 0;
+            width: 40px;
+            height: 2px;
+            background: var(--gradient-3);
+            border-radius: 1px;
+        }
+        
+        .footer-column ul {
+            list-style: none;
+        }
+        
+        .footer-column ul li {
+            margin-bottom: 12px;
+            transition: all 0.3s ease;
+            padding-left: 0;
+        }
+        
+        .footer-column ul li:hover {
+            transform: translateX(8px);
+            padding-left: 10px;
+        }
+        
+        .footer-column ul li::before {
+            content: '▸';
+            color: var(--primary);
+            margin-right: 8px;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+        
+        .footer-column ul li:hover::before {
+            opacity: 1;
+        }
+        
+        .footer-column a {
+            color: var(--gray-light);
+            text-decoration: none;
+            transition: all 0.3s;
+        }
+        
+        .footer-column a:hover {
+            color: var(--primary);
+            text-shadow: 0 0 8px var(--primary);
+        }
+        
+        .copyright {
+            text-align: center;
+            padding-top: 40px;
+            border-top: 1px solid var(--border);
+            color: var(--gray);
+            position: relative;
+            z-index: 2;
+        }
+        
+        /* Enhanced Features Slideshow */
+        .features-slideshow {
+            padding: 100px 0;
+            background: var(--card-dark);
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .features-slideshow::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: radial-gradient(circle at 30% 20%, rgba(165, 94, 234, 0.15) 0%, transparent 50%),
+                        radial-gradient(circle at 70% 80%, rgba(0, 255, 136, 0.15) 0%, transparent 50%);
+            animation: gradientShift 12s ease-in-out infinite;
+        }
+        
+        @keyframes gradientShift {
+            0%, 100% { opacity: 0.8; transform: scale(1); }
+            50% { opacity: 1; transform: scale(1.1); }
+        }
+        
+        .features-slides-container {
+            max-width: 1000px;
+            position: relative;
+            margin: auto;
+            height: 600px;
+            border-radius: 25px;
+            overflow: hidden;
+            background: var(--glass);
+            backdrop-filter: blur(20px);
+            border: 1px solid var(--glass-border);
+            box-shadow: 0 25px 50px rgba(0, 0, 0, 0.5);
+        }
+        
+        .feature-slide {
+            display: none;
+            height: 100%;
+            position: relative;
+            animation: slideInScale 1.2s ease-in-out;
+        }
+        
+        @keyframes slideInScale {
+            from { opacity: 0; transform: scale(0.9) rotate(2deg); }
+            to { opacity: 1; transform: scale(1) rotate(0deg); }
+        }
+        
+        .feature-slide img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            filter: brightness(0.6) contrast(1.2) saturate(1.1);
+            transition: all 0.6s ease;
+        }
+        
+        .feature-slide:hover img {
+            filter: brightness(0.7) contrast(1.3) saturate(1.2);
+            transform: scale(1.08);
+        }
+        
+        .feature-slide-content {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: linear-gradient(transparent, rgba(0, 0, 0, 0.9));
+            color: white;
+            padding: 50px;
+            text-align: left;
+            backdrop-filter: blur(10px);
+        }
+        
+        .feature-slide-content h3 {
+            font-size: 2.5rem;
+            margin-bottom: 15px;
+            background: var(--gradient-3);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        
+        .feature-slide-content p {
+            font-size: 1.3rem;
+            color: rgba(255, 255, 255, 0.9);
+            line-height: 1.6;
+            margin-bottom: 20px;
+        }
+        
+        .feature-stats {
+            display: flex;
+            gap: 30px;
+            margin-top: 20px;
+        }
+        
+        .stat-item {
+            background: var(--glass);
+            backdrop-filter: blur(10px);
+            border: 1px solid var(--glass-border);
+            padding: 15px 20px;
+            border-radius: 10px;
+            text-align: center;
+            transition: all 0.3s ease;
+        }
+        
+        .stat-item:hover {
+            background: rgba(0, 212, 255, 0.2);
+            transform: scale(1.05);
+        }
+        
+        .stat-number {
+            font-size: 2rem;
+            font-weight: 700;
+            color: var(--primary);
+            display: block;
+        }
+        
+        .stat-label {
+            font-size: 0.9rem;
+            color: var(--gray-light);
+        }
+        
+        /* Navigation buttons for features slideshow */
+        .features-prev, .features-next {
+            cursor: pointer;
+            position: absolute;
+            top: 50%;
+            width: 70px;
+            height: 70px;
+            margin-top: -35px;
+            color: white;
+            font-weight: bold;
+            font-size: 28px;
+            transition: all 0.4s ease;
+            border-radius: 50%;
+            user-select: none;
+            background: var(--glass);
+            backdrop-filter: blur(15px);
+            border: 1px solid var(--glass-border);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 10;
+        }
+        
+        .features-next {
+            right: 30px;
+        }
+        
+        .features-prev {
+            left: 30px;
+        }
+        
+        .features-prev:hover, .features-next:hover {
+            background: rgba(0, 212, 255, 0.3);
+            transform: scale(1.1);
+            box-shadow: 0 0 25px rgba(0, 212, 255, 0.6);
+        }
+        
+        .features-dots {
+            text-align: center;
+            margin-top: 40px;
+            position: relative;
+            z-index: 2;
+        }
+        
+        .features-dot {
+            cursor: pointer;
+            height: 12px;
+            width: 30px;
+            margin: 0 8px;
+            background-color: var(--gray);
+            border-radius: 6px;
+            display: inline-block;
+            transition: all 0.4s ease;
+            border: 1px solid var(--border);
+        }
+        
+        .features-dot.active, .features-dot:hover {
+            background: var(--primary);
+            transform: scale(1.2);
+            box-shadow: 0 0 15px var(--primary);
+        }
+        
+        /* Responsive Design */
+        @media (max-width: 768px) {
+            .navbar {
+                flex-direction: column;
+                padding: 20px 0;
+            }
+            
+            .nav-links {
+                margin-top: 25px;
+                flex-wrap: wrap;
+                justify-content: center;
+            }
+            
+            .nav-links li {
+                margin: 8px 15px;
+            }
+            
+            .hero h1 {
+                font-size: 2.5rem;
+            }
+            
+            .hero p {
+                font-size: 1.1rem;
+            }
+            
+            .cta-buttons {
+                flex-direction: column;
+                align-items: center;
+                gap: 15px;
+            }
+            
+            .dashboard-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .roadmap-items {
+                flex-direction: column;
+                align-items: center;
+            }
+            
+            .roadmap-items::before {
+                display: none;
+            }
+            
+            .roadmap-item {
+                width: 100%;
+                margin-bottom: 50px;
+            }
+            
+            .slideshow-container,
+            .features-slides-container {
+                height: 400px;
+            }
+            
+            .feature-stats {
+                flex-direction: column;
+                gap: 15px;
+            }
+            
+            .features-grid {
+                grid-template-columns: 1fr;
+                gap: 30px;
+            }
+            
+            .search-box {
+                flex-direction: column;
+                border-radius: 15px;
+            }
+            
+            .search-input {
+                border-radius: 15px 15px 0 0;
+            }
+            
+            .search-btn {
+                border-radius: 0 0 15px 15px;
+                padding: 20px;
+            }
+        }
+        
+        /* Custom scrollbar */
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+        
+        ::-webkit-scrollbar-track {
+            background: var(--dark);
+        }
+        
+        ::-webkit-scrollbar-thumb {
+            background: var(--primary);
+            border-radius: 4px;
+        }
+        
+        ::-webkit-scrollbar-thumb:hover {
+            background: var(--primary-dark);
+        }
+        
+        /* Loading animation */
+        .loading-pulse {
+            animation: pulse 2s infinite;
+        }
+        
+        @keyframes pulse {
+            0% { opacity: 1; }
+            50% { opacity: 0.5; }
+            100% { opacity: 1; }
+        }
+    </style>
+</head>
+<body>
+    <!-- Header & Navigation -->
+    <header>
+        <div class="container">
+            <nav class="navbar">
+                <a href="homez.html" class="logo">
+                    <i class="fas fa-parking"></i>
+                    <span>Parkease</span>
+                </a>
+                <ul class="nav-links">
+                    <li><a href="homez.html">Home</a></li>
+                    <li><a href="#">Features</a></li>
+                    <li><a href="#">Dashboard</a></li>
+                    <li><a href="#">About Us</a></li>
+                </ul>
+                <button class="login-btn" onclick="window.location.href='sign.html'">
+                    <i class="fas fa-user"></i> Login / Register
+                </button>
+            </nav>
+        </div>
+    </header>
+
+    <!-- Hero Section -->
+    <section class="hero">
+        <div class="container">
+            <h1>Smart Parking & Traffic Insights for a Smarter City</h1>
+            <p>Book parking, avoid traffic, and reduce emissions — powered by next-generation AI technology.</p>
+            <div class="cta-buttons">
+                <a href="#" class="btn btn-primary">
+                    <i class="fas fa-rocket"></i> Get Started
+                </a>
+                <a href="#" class="btn btn-outline">
+                    <i class="fas fa-play"></i> Watch Demo
+                </a>
+            </div>
+        </div>
+    </section>
+
+    <!-- Features Section -->
+    <section class="features">
+        <div class="container">
+            <div class="section-title">
+                <h2>Revolutionary Urban Mobility Solutions</h2>
+                <p>Experience the future of city transportation with our AI-powered platform</p>
+            </div>
+            <div class="features-grid">
+                <div class="feature-card">
+                    <div class="feature-icon">
+                        <i class="fas fa-car"></i>
+                    </div>
+                    <h3>Smart Parking</h3>
+                    <p>Find and reserve parking slots in real-time with our interactive map powered by machine learning algorithms</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">
+                        <i class="fas fa-traffic-light"></i>
+                    </div>
+                    <h3>Traffic Dashboard</h3>
+                    <p>Visualize current traffic conditions and predict upcoming congestion with advanced analytics</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">
+                        <i class="fas fa-signal"></i>
+                    </div>
+                    <h3>Signal Simulation</h3>
+                    <p>AI-controlled traffic signals that adapt based on real-time flow optimization</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">
+                        <i class="fas fa-ambulance"></i>
+                    </div>
+                    <h3>Emergency Response</h3>
+                    <p>Intelligent accident detection with smart rerouting and emergency service coordination</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Enhanced Features Slideshow -->
+    <section class="features-slideshow">
+        <div class="container">
+            <div class="section-title">
+                <h2>Advanced Technology in Action</h2>
+                <p>Discover how Parkease transforms urban mobility through cutting-edge innovation</p>
+            </div>
+            
+            <div class="features-slides-container">
+                <div class="feature-slide">
+                    <img src="https://images.unsplash.com/photo-1573804633927-bfcbcd909acd?ixlib=rb-4.0.3&auto=format&fit=crop&w=2000&q=80" alt="AI Traffic Control">
+                    <div class="feature-slide-content">
+                        <h3>AI Traffic Control</h3>
+                        <p>Our neural networks analyze traffic patterns in real-time, reducing congestion by up to 40% and optimizing signal timing for maximum efficiency.</p>
+                        <div class="feature-stats">
+                            <div class="stat-item">
+                                <span class="stat-number">40%</span>
+                                <span class="stat-label">Less Congestion</span>
+                            </div>
+                            <div class="stat-item">
+                                <span class="stat-number">25%</span>
+                                <span class="stat-label">Faster Commutes</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="feature-slide">
+                    <img src="images/smart.jpg" alt="Smart Parking Network">
+                    <div class="feature-slide-content">
+                        <h3>Smart Parking Network</h3>
+                        <p>Connected parking infrastructure with IoT sensors providing real-time availability, automated payments, and predictive booking capabilities.</p>
+                        <div class="feature-stats">
+                            <div class="stat-item">
+                                <span class="stat-number">2000+</span>
+                                <span class="stat-label">Smart Spots</span>
+                            </div>
+                            <div class="stat-item">
+                                <span class="stat-number">95%</span>
+                                <span class="stat-label">Accuracy Rate</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="feature-slide">
+                    <img src="https://images.unsplash.com/photo-1519003722824-194d4455a60c?ixlib=rb-4.0.3&auto=format&fit=crop&w=2000&q=80" alt="Green Transportation">
+                    <div class="feature-slide-content">
+                        <h3>Sustainable Mobility</h3>
+                        <p>Reduce carbon emissions through optimized routing, electric vehicle integration, and smart city planning that prioritizes environmental impact.</p>
+                        <div class="feature-stats">
+                            <div class="stat-item">
+                                <span class="stat-number">60%</span>
+                                <span class="stat-label">CO₂ Reduction</span>
+                            </div>
+                            <div class="stat-item">
+                                <span class="stat-number">15K</span>
+                                <span class="stat-label">Trees Saved</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="feature-slide">
+                    <img src="https://images.unsplash.com/photo-1513475382585-d06e58bcb0e0?ixlib=rb-4.0.3&auto=format&fit=crop&w=2000&q=80" alt="Data Analytics">
+                    <div class="feature-slide-content">
+                        <h3>Predictive Analytics</h3>
+                        <p>Advanced machine learning models analyze historical data to predict traffic patterns, parking demand, and optimal city infrastructure planning.</p>
+                        <div class="feature-stats">
+                            <div class="stat-item">
+                                <span class="stat-number">99%</span>
+                                <span class="stat-label">Prediction Accuracy</span>
+                            </div>
+                            <div class="stat-item">
+                                <span class="stat-number">24/7</span>
+                                <span class="stat-label">Monitoring</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <a class="features-prev" onclick="plusFeaturesSlides(-1)">&#10094;</a>
+                <a class="features-next" onclick="plusFeaturesSlides(1)">&#10095;</a>
+            </div>
+            <br>
+            
+            <div class="features-dots">
+                <span class="features-dot" onclick="currentFeaturesSlide(1)"></span> 
+                <span class="features-dot" onclick="currentFeaturesSlide(2)"></span> 
+                <span class="features-dot" onclick="currentFeaturesSlide(3)"></span> 
+                <span class="features-dot" onclick="currentFeaturesSlide(4)"></span> 
+            </div>
+        </div>
+    </section>
+
+    <!-- Original Slideshow Section -->
+    <section class="slideshow">
+        <div class="container">
+            <div class="section-title">
+                <h2>Parkease in Action</h2>
+                <p>See how our platform transforms city mobility and parking management</p>
+            </div>
+            
+            <div class="slideshow-container">
+                <div class="mySlides">
+                    <img src="https://images.unsplash.com/photo-1477959858617-67f85cf4f1df?ixlib=rb-4.0.3&auto=format&fit=crop&w=2000&q=80" alt="Smart City">
+                    <div class="slide-content">
+                        <h3>Smart City Integration</h3>
+                        <p>Parkease seamlessly integrates with urban infrastructure for comprehensive mobility solutions</p>
+                    </div>
+                </div>
+                
+                <div class="mySlides">
+                    <img src="https://images.unsplash.com/photo-1544620347-c4fd4a3d5957?ixlib=rb-4.0.3&auto=format&fit=crop&w=2000&q=80" alt="Traffic Management">
+                    <div class="slide-content">
+                        <h3>Real-Time Traffic Management</h3>
+                        <p>Our AI algorithms optimize traffic flow in real-time, reducing wait times and emissions</p>
+                    </div>
+                </div>
+                
+                <div class="mySlides">
+                    <img src="images/carspot.jpg" alt="Parking Solution">
+                    <div class="slide-content">
+                        <h3>Intelligent Parking Solutions</h3>
+                        <p>Find and reserve parking spots with ease using our advanced prediction algorithms</p>
+                    </div>
+                </div>
+                
+                <a class="prev" onclick="plusSlides(-1)">&#10094;</a>
+                <a class="next" onclick="plusSlides(1)">&#10095;</a>
+            </div>
+            <br>
+            
+            <div class="dots">
+                <span class="dot" onclick="currentSlide(1)"></span> 
+                <span class="dot" onclick="currentSlide(2)"></span> 
+                <span class="dot" onclick="currentSlide(3)"></span> 
+            </div>
+        </div>
+    </section>
+
+    <!-- Booking Section -->
+    <section class="booking">
+        <div class="container">
+            <div class="section-title">
+                <h2>Find & Reserve Parking in Real-Time</h2>
+                <p>Enter your destination to discover available parking options with live updates</p>
+            </div>
+            <div class="booking-container">
+                <div class="search-box">
+                    <input type="text" class="search-input" placeholder="Enter destination or parking area...">
+                    <button class="search-btn">
+                        <i class="fas fa-search"></i> Search
+                    </button>
+                </div>
+                <div class="map-container">
+                    <div class="map-overlay">
+                        <h3><i class="fas fa-map-marker-alt"></i> Downtown Area</h3>
+                        <p><span class="stat-number" style="font-size: 1.5rem;">45</span> available spots</p>
+                        <div style="margin-top: 10px;">
+                            <span style="color: var(--secondary); font-size: 0.9rem;">
+                                <i class="fas fa-circle"></i> Live Updates
+                            </span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Dashboard Section -->
+    <section class="dashboard">
+        <div class="container">
+            <div class="section-title">
+                <h2>Advanced Analytics Dashboard</h2>
+                <p>Comprehensive traffic insights and predictive analytics for smart urban planning</p>
+            </div>
+            <div class="dashboard-grid">
+                <div class="dashboard-card">
+                    <h3><i class="fas fa-fire"></i> Congestion Heatmap</h3>
+                    <div class="chart-container">
+                        <canvas id="congestionChart"></canvas>
+                    </div>
+                </div>
+                <div class="dashboard-card">
+                    <h3><i class="fas fa-chart-line"></i> Traffic Prediction</h3>
+                    <div class="chart-container">
+                        <canvas id="trafficChart"></canvas>
+                    </div>
+                </div>
+                <div class="dashboard-card">
+                    <h3><i class="fas fa-parking"></i> Parking Demand Forecast</h3>
+                    <div class="chart-container">
+                        <canvas id="parkingChart"></canvas>
+                    </div>
+                </div>
+                <div class="dashboard-card">
+                    <h3><i class="fas fa-leaf"></i> Emission Reduction</h3>
+                    <div class="chart-container">
+                        <canvas id="emissionChart"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Roadmap Section -->
+    <section class="roadmap">
+        <div class="container">
+            <div class="section-title">
+                <h2>Future Innovation Roadmap</h2>
+                <p>Our vision for expanding Parkease's capabilities and transforming urban mobility</p>
+            </div>
+            <div class="roadmap-items">
+                <div class="roadmap-item">
+                    <div class="roadmap-icon">
+                        <i class="fas fa-gamepad"></i>
+                    </div>
+                    <h3>Gamification & Rewards</h3>
+                    <p>Earn points and unlock achievements for making eco-friendly transportation choices and reducing your carbon footprint</p>
+                </div>
+                <div class="roadmap-item">
+                    <div class="roadmap-icon">
+                        <i class="fas fa-bus"></i>
+                    </div>
+                    <h3>Public Transport AI</h3>
+                    <p>Revolutionary AI-powered routing and scheduling optimization for buses, trains, and metro systems</p>
+                </div>
+                <div class="roadmap-item">
+                    <div class="roadmap-icon">
+                        <i class="fas fa-charging-station"></i>
+                    </div>
+                    <h3>EV Infrastructure</h3>
+                    <p>Comprehensive electric vehicle charging network integration with route planning and reservation systems</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer>
+        <div class="container">
+            <div class="footer-content">
+                <div class="footer-column">
+                    <h3>Parkease</h3>
+                    <p>Revolutionizing urban mobility with smart parking and traffic insights for a sustainable future.</p>
+                </div>
+                <div class="footer-column">
+                    <h3>Platform</h3>
+                    <ul>
+                        <li><a href="#">Smart Parking</a></li>
+                        <li><a href="#">Traffic Analytics</a></li>
+                        <li><a href="#">City Dashboard</a></li>
+                        <li><a href="#">Mobile App</a></li>
+                    </ul>
+                </div>
+                <div class="footer-column">
+                    <h3>Resources</h3>
+                    <ul>
+                        <li><a href="#">API Documentation</a></li>
+                        <li><a href="#">Developer Guide</a></li>
+                        <li><a href="#">Case Studies</a></li>
+                        <li><a href="#">Support Center</a></li>
+                    </ul>
+                </div>
+                <div class="footer-column">
+                    <h3>Connect</h3>
+                    <ul>
+                        <li><a href="#"><i class="fas fa-envelope"></i> hello@parkease.com</a></li>
+                        <li><a href="#"><i class="fas fa-phone"></i> +1 (555) 123-4567</a></li>
+                        <li><a href="#"><i class="fas fa-map-marker-alt"></i> Silicon Valley, CA</a></li>
+                        <li><a href="#"><i class="fab fa-twitter"></i> @parkease</a></li>
+                    </ul>
+                </div>
+            </div>
+            <div class="copyright">
+                <p>&copy; 2025 Parkease. All rights reserved. | Transforming cities, one parking spot at a time.</p>
+            </div>
+        </div>
+    </footer>
+
+    <script>
+        // Initialize charts with dark theme
+        Chart.defaults.color = '#999999';
+        Chart.defaults.borderColor = '#222222';
+        Chart.defaults.backgroundColor = 'rgba(0, 212, 255, 0.1)';
+        
+        document.addEventListener('DOMContentLoaded', function() {
+            // Congestion Heatmap Chart
+            const congestionCtx = document.getElementById('congestionChart').getContext('2d');
+            new Chart(congestionCtx, {
+                type: 'bar',
+                data: {
+                    labels: ['Downtown', 'Financial Dist.', 'Shopping Area', 'Residential', 'Industrial'],
+                    datasets: [{
+                        label: 'Congestion Level',
+                        data: [85, 75, 90, 40, 30],
+                        backgroundColor: [
+                            'rgba(255, 71, 87, 0.8)',
+                            'rgba(255, 165, 2, 0.8)',
+                            'rgba(255, 71, 87, 0.8)',
+                            'rgba(0, 255, 136, 0.8)',
+                            'rgba(0, 255, 136, 0.8)'
+                        ],
+                        borderColor: [
+                            'rgb(255, 71, 87)',
+                            'rgb(255, 165, 2)',
+                            'rgb(255, 71, 87)',
+                            'rgb(0, 255, 136)',
+                            'rgb(0, 255, 136)'
+                        ],
+                        borderWidth: 2,
+                        borderRadius: 8,
+                        borderSkipped: false,
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            labels: {
+                                color: '#999999'
+                            }
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            max: 100,
+                            grid: {
+                                color: '#222222'
+                            },
+                            ticks: {
+                                color: '#999999'
+                            }
+                        },
+                        x: {
+                            grid: {
+                                color: '#222222'
+                            },
+                            ticks: {
+                                color: '#999999'
+                            }
+                        }
+                    }
+                }
+            });
+
+            // Traffic Prediction Chart
+            const trafficCtx = document.getElementById('trafficChart').getContext('2d');
+            new Chart(trafficCtx, {
+                type: 'line',
+                data: {
+                    labels: ['6am', '9am', '12pm', '3pm', '6pm', '9pm'],
+                    datasets: [{
+                        label: 'Predicted Traffic',
+                        data: [30, 80, 65, 70, 90, 40],
+                        fill: true,
+                        backgroundColor: 'rgba(0, 212, 255, 0.1)',
+                        borderColor: 'rgb(0, 212, 255)',
+                        borderWidth: 3,
+                        tension: 0.4,
+                        pointBackgroundColor: 'rgb(0, 212, 255)',
+                        pointBorderColor: '#ffffff',
+                        pointBorderWidth: 2,
+                        pointRadius: 6,
+                        pointHoverRadius: 8,
+                        pointHoverBackgroundColor: 'rgb(0, 212, 255)',
+                        pointHoverBorderColor: '#ffffff'
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            labels: {
+                                color: '#999999'
+                            }
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            max: 100,
+                            grid: {
+                                color: '#222222'
+                            },
+                            ticks: {
+                                color: '#999999'
+                            }
+                        },
+                        x: {
+                            grid: {
+                                color: '#222222'
+                            },
+                            ticks: {
+                                color: '#999999'
+                            }
+                        }
+                    }
+                }
+            });
+
+            // Parking Demand Chart
+            const parkingCtx = document.getElementById('parkingChart').getContext('2d');
+            new Chart(parkingCtx, {
+                type: 'doughnut',
+                data: {
+                    labels: ['Available', 'Occupied', 'Reserved'],
+                    datasets: [{
+                        label: 'Parking Spots',
+                        data: [35, 50, 15],
+                        backgroundColor: [
+                            'rgb(0, 255, 136)',
+                            'rgb(255, 71, 87)',
+                            'rgb(255, 165, 2)'
+                        ],
+                        borderColor: [
+                            'rgb(0, 255, 136)',
+                            'rgb(255, 71, 87)',
+                            'rgb(255, 165, 2)'
+                        ],
+                        borderWidth: 2,
+                        hoverOffset: 8
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            position: 'bottom',
+                            labels: {
+                                color: '#999999',
+                                padding: 20,
+                                usePointStyle: true
+                            }
+                        }
+                    }
+                }
+            });
+
+            // Emission Reduction Chart
+            const emissionCtx = document.getElementById('emissionChart').getContext('2d');
+            new Chart(emissionCtx, {
+                type: 'bar',
+                data: {
+                    labels: ['This Week', 'Last Week', 'This Month', 'Last Month'],
+                    datasets: [{
+                        label: 'CO₂ Reduction (tons)',
+                        data: [3.2, 2.8, 12.5, 10.2],
+                        backgroundColor: 'rgba(0, 255, 136, 0.8)',
+                        borderColor: 'rgb(0, 255, 136)',
+                        borderWidth: 2,
+                        borderRadius: 8,
+                        borderSkipped: false,
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            labels: {
+                                color: '#999999'
+                            }
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            grid: {
+                                color: '#222222'
+                            },
+                            ticks: {
+                                color: '#999999'
+                            }
+                        },
+                        x: {
+                            grid: {
+                                color: '#222222'
+                            },
+                            ticks: {
+                                color: '#999999'
+                            }
+                        }
+                    }
+                }
+            });
+            
+            // Initialize original slideshow
+            let slideIndex = 0;
+            showSlides();
+            
+            function showSlides() {
+                let slides = document.getElementsByClassName("mySlides");
+                let dots = document.getElementsByClassName("dot");
+                
+                for (let i = 0; i < slides.length; i++) {
+                    slides[i].style.display = "none";  
+                }
+                
+                slideIndex++;
+                if (slideIndex > slides.length) {slideIndex = 1}
+                
+                for (let i = 0; i < dots.length; i++) {
+                    dots[i].className = dots[i].className.replace(" active", "");
+                }
+                
+                if (slides[slideIndex-1]) {
+                    slides[slideIndex-1].style.display = "block";  
+                }
+                if (dots[slideIndex-1]) {
+                    dots[slideIndex-1].className += " active";
+                }
+                
+                setTimeout(showSlides, 6000); // Change image every 6 seconds
+            }
+            
+            // Initialize features slideshow
+            let featuresSlideIndex = 0;
+            showFeaturesSlides();
+            
+            function showFeaturesSlides() {
+                let slides = document.getElementsByClassName("feature-slide");
+                let dots = document.getElementsByClassName("features-dot");
+                
+                for (let i = 0; i < slides.length; i++) {
+                    slides[i].style.display = "none";  
+                }
+                
+                featuresSlideIndex++;
+                if (featuresSlideIndex > slides.length) {featuresSlideIndex = 1}
+                
+                for (let i = 0; i < dots.length; i++) {
+                    dots[i].className = dots[i].className.replace(" active", "");
+                }
+                
+                if (slides[featuresSlideIndex-1]) {
+                    slides[featuresSlideIndex-1].style.display = "block";  
+                }
+                if (dots[featuresSlideIndex-1]) {
+                    dots[featuresSlideIndex-1].className += " active";
+                }
+                
+                setTimeout(showFeaturesSlides, 7000); // Change image every 7 seconds
+            }
+            
+            // Manual slideshow controls for original slideshow
+            window.plusSlides = function(n) {
+                slideIndex += n - 1;
+                showSlides();
+            }
+            
+            window.currentSlide = function(n) {
+                slideIndex = n - 1;
+                showSlides();
+            }
+            
+            // Manual slideshow controls for features slideshow
+            window.plusFeaturesSlides = function(n) {
+                featuresSlideIndex += n - 1;
+                showFeaturesSlides();
+            }
+            
+            window.currentFeaturesSlide = function(n) {
+                featuresSlideIndex = n - 1;
+                showFeaturesSlides();
+            }
+            
+            // Animate elements on scroll
+            const animateOnScroll = function() {
+                const features = document.querySelectorAll('.feature-card');
+                const dashboardCards = document.querySelectorAll('.dashboard-card');
+                const roadmapItems = document.querySelectorAll('.roadmap-item');
+                
+                features.forEach(feature => {
+                    const position = feature.getBoundingClientRect();
+                    if(position.top < window.innerHeight - 100) {
+                        feature.classList.add('animate');
+                    }
+                });
+                
+                dashboardCards.forEach(card => {
+                    const position = card.getBoundingClientRect();
+                    if(position.top < window.innerHeight - 100) {
+                        card.classList.add('animate');
+                    }
+                });
+                
+                roadmapItems.forEach(item => {
+                    const position = item.getBoundingClientRect();
+                    if(position.top < window.innerHeight - 100) {
+                        item.classList.add('animate');
+                    }
+                });
+            };
+            
+            window.addEventListener('scroll', animateOnScroll);
+            // Initial check in case elements are already in view
+            animateOnScroll();
+            
+            // Enhanced search functionality
+            const searchInput = document.querySelector('.search-input');
+            const searchBtn = document.querySelector('.search-btn');
+            
+            searchBtn.addEventListener('click', function() {
+                const searchValue = searchInput.value.trim();
+                if (searchValue) {
+                    // Add loading state
+                    searchBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Searching...';
+                    searchBtn.disabled = true;
+                    
+                    // Simulate search
+                    setTimeout(() => {
+                        searchBtn.innerHTML = '<i class="fas fa-search"></i> Search';
+                        searchBtn.disabled = false;
+                        
+                        // Update map overlay with search results
+                        const overlay = document.querySelector('.map-overlay');
+                        overlay.innerHTML = `
+                            <h3><i class="fas fa-map-marker-alt"></i> ${searchValue}</h3>
+                            <p><span class="stat-number" style="font-size: 1.5rem;">${Math.floor(Math.random() * 50) + 10}</span> available spots</p>
+                            <div style="margin-top: 10px;">
+                                <span style="color: var(--secondary); font-size: 0.9rem;">
+                                    <i class="fas fa-circle"></i> Live Updates
+                                </span>
+                            </div>
+                        `;
+                        
+                        // Add pulse animation to indicate update
+                        overlay.style.animation = 'pulse 1s ease-in-out';
+                        setTimeout(() => {
+                            overlay.style.animation = '';
+                        }, 1000);
+                    }, 1500);
+                }
+            });
+            
+            // Enter key support for search
+            searchInput.addEventListener('keypress', function(e) {
+                if (e.key === 'Enter') {
+                    searchBtn.click();
+                }
+            });
+            
+            // Add smooth scrolling for navigation links
+            document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+                anchor.addEventListener('click', function (e) {
+                    e.preventDefault();
+                    const target = document.querySelector(this.getAttribute('href'));
+                    if (target) {
+                        target.scrollIntoView({
+                            behavior: 'smooth',
+                            block: 'start'
+                        });
+                    }
+                });
+            });
+            
+            // Add typing effect to hero text
+            const heroTitle = document.querySelector('.hero h1');
+            const heroText = heroTitle.textContent;
+            heroTitle.textContent = '';
+            
+            setTimeout(() => {
+                let i = 0;
+                const typeWriter = () => {
+                    if (i < heroText.length) {
+                        heroTitle.textContent += heroText.charAt(i);
+                        i++;
+                        setTimeout(typeWriter, 50);
+                    }
+                };
+                typeWriter();
+            }, 1000);
+        });
+    </script>
+</body>
+</html>

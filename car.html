@@ -1,0 +1,663 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Parkease - Smart Parking with Voice</title>
+  <style>
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+    
+    body { 
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; 
+      background: linear-gradient(135deg, #000000 0%, #c3cfe2 100%);
+      margin: 0;
+      padding: 20px;
+      min-height: 100vh;
+    }
+    
+    .container {
+      max-width: 1200px;
+      margin: 0 auto;
+    }
+    
+    header {
+      text-align: center;
+      padding: 20px 0;
+      margin-bottom: 30px;
+    }
+    
+    h1 { 
+      color: #f3f3f3; 
+      font-size: 2.5rem;
+      margin-bottom: 10px;
+    }
+    
+    .tagline {
+      color: #f4f8f8;
+      font-size: 1.2rem;
+      margin-bottom: 20px;
+    }
+    
+    .voice-section {
+      text-align: center;
+      margin-bottom: 40px;
+    }
+    
+    .voice-btn { 
+      background: #000000;
+      color: white;
+      padding: 15px 30px;
+      border: none;
+      border-radius: 50px;
+      cursor: pointer;
+      font-size: 1.1rem;
+      font-weight: 600;
+      box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+      transition: all 0.3s ease;
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+    }
+    
+    .voice-btn:hover {
+      background: #697379;
+      transform: translateY(-2px);
+      box-shadow: 0 6px 12px rgba(0,0,0,0.15);
+    }
+    
+    .section {
+      background: rgb(0, 0, 0);
+      border-radius: 15px;
+      padding: 25px;
+      margin-bottom: 30px;
+      box-shadow: 0 5px 15px rgba(0,0,0,0.08);
+    }
+    
+    h2 {
+      color: #ffffff;
+      margin-bottom: 20px;
+      padding-bottom: 10px;
+      border-bottom: 2px solid #f1f1f1;
+    }
+    
+    .slots, .bookings {
+      display: flex;
+      gap: 20px;
+      flex-wrap: wrap;
+      justify-content: center;
+    }
+    
+    .card {
+      background: rgb(219, 216, 216);
+      border-radius: 12px;
+      padding: 20px;
+      box-shadow: 0 3px 10px rgba(0,0,0,0.08);
+      width: 280px;
+      text-align: center;
+      transition: all 0.3s ease;
+      border: 1px solid #eaeaea;
+    }
+    
+    .card:hover {
+      transform: translateY(-5px);
+      box-shadow: 0 8px 20px rgba(0,0,0,0.12);
+    }
+    
+    .card h3 {
+      color: #2c3e50;
+      margin-bottom: 15px;
+      font-size: 1.3rem;
+    }
+    
+    .card p {
+      color: #1a2425;
+      margin-bottom: 15px;
+      font-size: 1.1rem;
+    }
+    
+    .card strong {
+      color: #111921;
+      font-size: 1.4rem;
+    }
+    
+    button {
+      padding: 12px 20px;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+      font-weight: 600;
+      transition: all 0.3s ease;
+    }
+    
+    button.book {
+      background: #030303;
+      color: white;
+      width: 100%;
+      font-size: 1rem;
+    }
+    
+    button.book:hover {
+      background: #5a5e5c;
+    }
+    
+    button.disabled {
+      background: #bdc3c7;
+      cursor: not-allowed;
+      width: 100%;
+    }
+    
+    /* Modal Styles */
+    .modal {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0,0,0,0.7);
+      z-index: 1000;
+      justify-content: center;
+      align-items: center;
+    }
+    
+    .modal-content {
+      background: rgb(0, 0, 0);
+      border-radius: 15px;
+      width: 90%;
+      max-width: 500px;
+      padding: 30px;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+      position: relative;
+    }
+    
+    .close-btn {
+      position: absolute;
+      top: 15px;
+      right: 15px;
+      font-size: 1.5rem;
+      cursor: pointer;
+      color: #7f8c8d;
+      background: none;
+      border: none;
+      padding: 5px;
+    }
+    
+    .close-btn:hover {
+      color: #e74c3c;
+    }
+    
+    .form-group {
+      margin-bottom: 20px;
+    }
+    
+    .form-group label {
+      display: block;
+      margin-bottom: 8px;
+      font-weight: 600;
+      color: #ffffff;
+    }
+    
+    .form-group input,
+    .form-group select {
+      width: 100%;
+      padding: 12px 15px;
+      border: 1px solid #ddd;
+      border-radius: 6px;
+      font-size: 16px;
+    }
+    
+    .form-group input:focus,
+    .form-group select:focus {
+      border-color: #3498db;
+      outline: none;
+      box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.2);
+    }
+    
+    .submit-btn {
+      background: #4d4b4b;
+      color: white;
+      width: 100%;
+      padding: 15px;
+      font-size: 1.1rem;
+      margin-top: 10px;
+    }
+    
+    .submit-btn:hover {
+      background: #9ba69f;
+    }
+    
+    .booking-card {
+      background: white;
+      border-radius: 12px;
+      padding: 20px;
+      box-shadow: 0 3px 10px rgba(0,0,0,0.08);
+      width: 300px;
+      border-left: 5px solid #3498db;
+      color: #222;
+    }
+    
+    .booking-card h3 {
+      color: #222;
+      margin-bottom: 15px;
+      padding-bottom: 10px;
+      border-bottom: 1px solid #f1f1f1;
+    }
+    
+    .booking-card button {
+      background: #e74c3c;
+      color: #fff;
+      border: none;
+      padding: 10px 18px;
+      border-radius: 6px;
+      font-weight: 600;
+      cursor: pointer;
+      margin-top: 10px;
+      transition: background 0.2s;
+    }
+    
+    .booking-card button:hover {
+      background: #c0392b;
+    }
+    
+    .voice-status {
+      text-align: center;
+      margin-top: 15px;
+      font-style: italic;
+      color: #7f8c8d;
+      min-height: 24px;
+    }
+    
+    @media (max-width: 768px) {
+      .slots, .bookings {
+        flex-direction: column;
+        align-items: center;
+      }
+      
+      .card, .booking-card {
+        width: 100%;
+        max-width: 350px;
+      }
+      
+      h1 {
+        font-size: 2rem;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <header>
+      <h1>ParkEase - Smart Parking Booking</h1>
+      <p class="tagline">Book your parking spot with ease using voice commands or traditional booking</p>
+    </header>
+
+    <!-- Voice Command Button -->
+    <div class="voice-section">
+      <button class="voice-btn" onclick="startVoice()">
+        <span>🎙️</span> Voice Command
+      </button>
+      <div class="voice-status" id="voiceStatus"></div>
+    </div>
+
+    <!-- Available Parking Slots -->
+    <div class="section">
+      <h2>Available Parking Slots</h2>
+      <div class="slots" id="slotList"></div>
+    </div>
+
+    <!-- My Bookings -->
+    <div class="section">
+      <h2>My Bookings</h2>
+      <div class="bookings" id="bookingList">
+        <p id="noBookings">You don't have any bookings yet.</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Booking Form Modal -->
+  <div class="modal" id="bookingModal">
+    <div class="modal-content">
+      <button class="close-btn" onclick="closeModal()">&times;</button>
+      <h2>Book Parking Spot</h2>
+      <form id="bookingForm">
+        <div class="form-group">
+          <label for="name">Full Name</label>
+          <input type="text" id="name" required placeholder="Enter your full name">
+        </div>
+        
+        <div class="form-group">
+          <label for="carNumber">Car Number</label>
+          <input type="text" id="carNumber" required placeholder="Enter your car number">
+        </div>
+        
+        <div class="form-group">
+          <label for="date">Date</label>
+          <input type="date" id="date" required>
+        </div>
+        
+        <div class="form-group">
+          <label for="time">Time</label>
+          <input type="time" id="time" required>
+        </div>
+        
+        <div class="form-group">
+          <label for="location">Location</label>
+          <select id="location" required>
+            <option value="">Select a location</option>
+            <option value="Nucleus Mall">Nucleus Mall</option>
+            <option value="D Mart">D Mart</option>
+            <option value="KLE Hospital">KLE Hospital</option>
+          </select>
+        </div>
+        
+        <button type="submit" class="submit-btn">Confirm Booking</button>
+      </form>
+    </div>
+  </div>
+
+  <script>
+    // Sample Parking Slots Data
+    let slots = [
+      { id: 1, location: "Nucleus Mall", available: 10 },
+      { id: 2, location: "D Mart", available: 10 },
+      { id: 3, location: "KLE Hospital", available: 10 }
+    ];
+
+    let bookings = [];
+    let currentSlotId = null;
+    let isListening = false;
+
+    // Render slots
+    function renderSlots() {
+      const slotList = document.getElementById("slotList");
+      slotList.innerHTML = "";
+      
+      slots.forEach(slot => {
+        const card = document.createElement("div");
+        card.className = "card";
+        card.innerHTML = `
+          <h3>${slot.location}</h3>
+          <p>Available: <strong>${slot.available}</strong></p>
+          <button 
+            class="book ${slot.available === 0 ? 'disabled' : ''}" 
+            onclick="openBookingForm(${slot.id})" 
+            ${slot.available === 0 ? 'disabled' : ''}>
+            ${slot.available === 0 ? 'Fully Booked' : 'Book Now'}
+          </button>
+        `;
+        slotList.appendChild(card);
+      });
+    }
+
+    // Open booking form
+    function openBookingForm(slotId) {
+      currentSlotId = slotId;
+      const modal = document.getElementById("bookingModal");
+      modal.style.display = "flex";
+      
+      // Set default values
+      const today = new Date();
+      const tomorrow = new Date(today);
+      tomorrow.setDate(tomorrow.getDate() + 1);
+      
+      document.getElementById("date").valueAsDate = tomorrow;
+      document.getElementById("time").value = "10:00";
+      
+      const slot = slots.find(s => s.id === slotId);
+      if (slot) {
+        document.getElementById("location").value = slot.location;
+      }
+    }
+
+    // Close modal
+    function closeModal() {
+      const modal = document.getElementById("bookingModal");
+      modal.style.display = "none";
+      document.getElementById("bookingForm").reset();
+    }
+
+    // Handle form submission
+    document.getElementById("bookingForm").addEventListener("submit", function(e) {
+      e.preventDefault();
+      
+      const name = document.getElementById("name").value;
+      const carNumber = document.getElementById("carNumber").value;
+      const date = document.getElementById("date").value;
+      const time = document.getElementById("time").value;
+      const location = document.getElementById("location").value;
+      
+      // Find the slot
+      const slot = slots.find(s => s.id === currentSlotId);
+      
+      if (slot && slot.available > 0) {
+        // Reduce available spots
+        slot.available -= 1;
+        
+        // Add to bookings
+        const booking = {
+          id: Date.now(),
+          name,
+          carNumber,
+          date,
+          time,
+          location,
+          bookedAt: new Date().toLocaleString()
+        };
+        
+        bookings.push(booking);
+        
+        // Update UI
+        renderSlots();
+        renderBookings();
+        
+        // Close modal
+        closeModal();
+        
+        // Read confirmation aloud
+        readBookingConfirmation(booking);
+      }
+    });
+
+    // Read booking confirmation aloud
+    function readBookingConfirmation(booking) {
+      const confirmationText = `
+        Booking confirmed! 
+        Your parking at ${booking.location} has been booked successfully.
+        Details: Name: ${booking.name}, 
+        Car Number: ${booking.carNumber}, 
+        Date: ${formatDate(booking.date)}, 
+        Time: ${booking.time}.
+        Thank you for using ParkEase!
+      `;
+      
+      speak(confirmationText);
+    }
+
+    // Format date for speech
+    function formatDate(dateString) {
+      const date = new Date(dateString);
+      return date.toLocaleDateString('en-US', { 
+        weekday: 'long', 
+        year: 'numeric', 
+        month: 'long', 
+        day: 'numeric' 
+      });
+    }
+
+    // Render bookings
+    function renderBookings() {
+      const bookingList = document.getElementById("bookingList");
+      const noBookings = document.getElementById("noBookings");
+
+      if (bookings.length === 0) {
+        noBookings.style.display = "block";
+        return;
+      }
+
+      noBookings.style.display = "none";
+      
+      // clear everything except the placeholder
+      bookingList.innerHTML = "";
+
+      bookings.forEach(booking => {
+        const card = document.createElement("div");
+        card.className = "booking-card";
+        card.innerHTML = `
+          <h3>${booking.location}</h3>
+          <p><strong>Name:</strong> ${booking.name}</p>
+          <p><strong>Car Number:</strong> ${booking.carNumber}</p>
+          <p><strong>Date:</strong> ${booking.date}</p>
+          <p><strong>Time:</strong> ${booking.time}</p>
+          <p><strong>Booked on:</strong> ${booking.bookedAt}</p>
+          <button onclick="cancelBooking(${booking.id})">Cancel Booking</button>
+        `;
+        bookingList.appendChild(card);
+      });
+    }
+
+    // Cancel booking
+    function cancelBooking(bookingId) {
+      const bookingIndex = bookings.findIndex(b => b.id === bookingId);
+      if (bookingIndex > -1) {
+        const booking = bookings[bookingIndex];
+
+        // Return spot back to slots
+        const slot = slots.find(s => s.location === booking.location);
+        if (slot) {
+          slot.available += 1;
+        }
+
+        // Remove from bookings
+        bookings.splice(bookingIndex, 1);
+
+        // Update UI
+        renderSlots();
+        renderBookings();
+        
+        speak(`Your booking at ${booking.location} has been cancelled.`);
+      }
+    }
+
+    // Voice Assistant: Speech Recognition + Commands
+    function startVoice() {
+      if (isListening) return;
+      
+      const recognition = new(window.SpeechRecognition || window.webkitSpeechRecognition)();
+      recognition.lang = "en-US";
+      recognition.continuous = false;
+      
+      updateVoiceStatus("Listening... Speak now");
+      speak("Listening for your command. Please say something like 'Book parking at Nucleus Mall' or 'Show my bookings'.");
+      
+      recognition.onresult = (event) => {
+        let command = event.results[0][0].transcript.toLowerCase();
+        console.log("User said:", command);
+        updateVoiceStatus(`Heard: "${command}"`);
+        handleCommand(command);
+      };
+      
+      recognition.onerror = (event) => {
+        console.error("Speech recognition error", event.error);
+        updateVoiceStatus("Error: " + event.error);
+        speak("Sorry, I didn't catch that. Please try again.");
+        isListening = false;
+      };
+      
+      recognition.onend = () => {
+        isListening = false;
+        updateVoiceStatus("Ready for voice commands");
+      };
+      
+      isListening = true;
+      recognition.start();
+    }
+
+    function updateVoiceStatus(message) {
+      document.getElementById("voiceStatus").textContent = message;
+    }
+
+    function handleCommand(command) {
+      if (command.includes("book")) {
+        if (command.includes("nucleus mall")) {
+          openBookingForm(1);
+          speak("Opening booking form for Nucleus Mall.");
+        } else if (command.includes("d mart") || command.includes("dmart")) {
+          openBookingForm(2);
+          speak("Opening booking form for D Mart.");
+        } else if (command.includes("hospital") || command.includes("kle")) {
+          openBookingForm(3);
+          speak("Opening booking form for KLE Hospital.");
+        } else {
+          speak("Please specify a valid location to book parking.");
+        }
+      } else if (command.includes("my bookings") || command.includes("show bookings")) {
+        if (bookings.length > 0) {
+          const bookingText = bookings.map((b, i) => 
+            `Booking ${i+1}: ${b.location} on ${formatDate(b.date)} at ${b.time} for ${b.name}`
+          ).join(". ");
+          speak(`You have ${bookings.length} bookings. ${bookingText}`);
+        } else {
+          speak("You don't have any bookings yet.");
+        }
+      } else if (command.includes("available") || command.includes("slots")) {
+        const availableText = slots.map(s => 
+          `${s.location} has ${s.available} spots available`
+        ).join(". ");
+        speak(`Current availability: ${availableText}`);
+      } else if (command.includes("help") || command.includes("what can i say")) {
+        speak(`
+          You can say: 
+          Book parking at Nucleus Mall, 
+          Book parking at D Mart, 
+          Book parking at KLE Hospital,
+          Show my bookings,
+          What slots are available,
+          Or just say help.
+        `);
+      } else {
+        speak("Sorry, I didn't understand. Try saying 'Book parking at Nucleus Mall' or 'Show my bookings'. Say 'help' for more options.");
+      }
+    }
+
+    // Voice Assistant: Speech Output
+    function speak(text) {
+      // Cancel any previous speech
+      window.speechSynthesis.cancel();
+      
+      const speech = new SpeechSynthesisUtterance(text);
+      speech.rate = 1.0;
+      speech.pitch = 1.0;
+      speech.volume = 1.0;
+      
+      speech.onend = function() {
+        console.log("Finished speaking");
+      };
+      
+      window.speechSynthesis.speak(speech);
+    }
+
+    // Close modal if clicked outside
+    window.addEventListener('click', function(event) {
+      const modal = document.getElementById("bookingModal");
+      if (event.target === modal) {
+        closeModal();
+      }
+    });
+
+    // Set minimum date to tomorrow
+    const dateInput = document.getElementById("date");
+    const tomorrow = new Date();
+    tomorrow.setDate(tomorrow.getDate() + 1);
+    dateInput.min = tomorrow.toISOString().split('T')[0];
+
+    // Initial Render
+    renderSlots();
+    renderBookings();
+    updateVoiceStatus("Ready for voice commands");
+  </script>
+</body>
+</html>

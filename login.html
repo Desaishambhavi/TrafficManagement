@@ -1,0 +1,591 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ParkEase - Login</title>
+    <!-- Firebase SDK -->
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
+    <style>
+        :root {
+            --primary: #00bcd4;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        body {
+            background: url("images/bg.jpg") no-repeat center center fixed;
+            background-size: cover;
+            color: #333;
+            line-height: 1.6;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            position: relative;
+        }
+
+        /* Transparent overlay */
+        body::before {
+            content: "";
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(245, 247, 250, 0.7);
+            z-index: -1;
+            backdrop-filter: blur(4px); /* Add this line for blur */
+        }
+
+        .container {
+            width: 100%;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 20px;
+        }
+        
+        /* Navigation */
+        .navbar {
+            background-color: #000000;
+            padding: 15px 0;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        }
+        
+        .nav-container {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .logo {
+            display: flex;
+            align-items: center;
+            font-size: 24px;
+            font-weight: 700;
+            color: var(--primary, #00bcd4); /* Uses --primary if defined, else #00bcd4 */
+            text-decoration: none;
+        }
+        
+        .logo i, .logo-icon {
+            margin-right: 10px;
+            transition: transform 0.5s ease;
+            filter: drop-shadow(0 0 10px var(--primary, #00bcd4));
+        }
+
+        .logo:hover i, .logo:hover .logo-icon {
+            transform: rotate(360deg) scale(1.1);
+            filter: drop-shadow(0 0 20px var(--primary, #00bcd4));
+        }
+        
+        .nav-links a {
+            color: white;
+            text-decoration: none;
+            margin-left: 20px;
+            font-weight: 500;
+            transition: color 0.3s;
+        }
+        
+        .nav-links a:hover {
+            color: #3498db;
+        }
+        
+        /* Auth Container */
+        .auth-container {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            flex: 1;
+            padding: 40px 0;
+        }
+        
+        .auth-card {
+            background-color:  rgb(10, 10, 26);
+            border-radius: 10px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
+            width: 100%;
+            max-width: 450px;
+            padding: 35px;
+            margin: 20px;
+            transform: translateY(0);
+            transition: transform 0.3s, box-shadow 0.3s;
+        }
+        
+        .auth-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.2);
+        }
+        
+        .auth-header {
+            text-align: center;
+            margin-bottom: 25px;
+        }
+        
+        .auth-header h1 {
+            color: #e8ebed;
+            font-size: 32px;
+            margin-bottom: 8px;
+        }
+        
+        .auth-subtitle {
+            color: #f8f9f9;
+            font-size: 16px;
+        }
+        
+        /* Form Styles */
+        .form-group {
+            margin-bottom: 20px;
+            position: relative;
+        }
+        
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: #fbfbfb;
+        }
+        
+        .form-control {
+            width: 100%;
+            padding: 14px 15px;
+            border: 1px solid #f0eded;
+            border-radius: 6px;
+            font-size: 16px;
+            transition: border-color 0.3s, box-shadow 0.3s;
+        }
+        
+        .form-control:focus {
+            border-color: #ffffff;
+            box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.2);
+            outline: none;
+        }
+        
+        .error-feedback {
+            color: #e74c3c;
+            font-size: 14px;
+            margin-top: 5px;
+            display: none;
+        }
+        
+        /* Button */
+        .btn {
+            display: inline-block;
+            padding: 14px 20px;
+            background-color: #f9fafb;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            text-align: center;
+            text-decoration: none;
+            transition: background-color 0.3s;
+        }
+        
+        .btn-primary {
+            background-color: #000000;
+        }
+        
+        .btn-primary:hover {
+            background-color: #1a1a1a;
+        }
+        
+        .btn-block {
+            display: block;
+            width: 100%;
+        }
+        
+        /* Form Check */
+        .form-check {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .form-check input {
+            width: auto;
+        }
+        
+        .form-check label {
+            margin-bottom: 0;
+        }
+        
+        /* Auth Footer */
+        .auth-footer {
+            margin-top: 25px;
+            text-align: center;
+        }
+        
+        .auth-footer p {
+            margin-bottom: 15px;
+        }
+        
+        .auth-footer a {
+            color: #3498db;
+            text-decoration: none;
+        }
+        
+        .auth-footer a:hover {
+            text-decoration: underline;
+        }
+        
+        .switch-form {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 5px;
+        }
+        
+        .switch-form p {
+            margin: 0;
+            color: #f7f7f7;
+        }
+        
+        .switch-form a {
+            color: #eff2f4;
+            text-decoration: none;
+            font-weight: 600;
+        }
+        
+        .switch-form a:hover {
+            text-decoration: underline;
+        }
+        
+        /* Error Message */
+        .error-message {
+            background-color: #ffebee;
+            color: #e74c3c;
+            padding: 12px;
+            border-radius: 6px;
+            margin-bottom: 20px;
+            text-align: center;
+            display: none;
+        }
+        
+        .error-message:not(:empty) {
+            display: block;
+        }
+        
+        /* Success Message */
+        .success-message {
+            background-color: #e8f5e9;
+            color: #2e7d32;
+            padding: 12px;
+            border-radius: 6px;
+            margin-bottom: 20px;
+            text-align: center;
+            display: none;
+        }
+        
+        .success-message:not(:empty) {
+            display: block;
+        }
+        
+        /* Loading Spinner */
+        .spinner {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 3px solid rgba(255,255,255,.3);
+            border-radius: 50%;
+            border-top-color: #fff;
+            animation: spin 1s ease-in-out infinite;
+        }
+        
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+        
+        /* Footer */
+        footer {
+            background-color: #050505;
+            color: white;
+            padding: 30px 0;
+            margin-top: 40px;
+        }
+        
+        .footer-content {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .footer-links {
+            display: flex;
+            gap: 20px;
+        }
+        
+        .footer-links a {
+            color: white;
+            text-decoration: none;
+            transition: color 0.3s;
+        }
+        
+        .footer-links a:hover {
+            color: #3498db;
+        }
+        
+        /* Responsive Design */
+        @media (max-width: 768px) {
+            .auth-card {
+                padding: 25px;
+            }
+            
+            .footer-content {
+                flex-direction: column;
+                text-align: center;
+                gap: 20px;
+            }
+            
+            .footer-links {
+                flex-wrap: wrap;
+                justify-content: center;
+            }
+            
+            .nav-container {
+                flex-direction: column;
+                gap: 15px;
+            }
+            
+            .nav-links {
+                display: flex;
+                gap: 15px;
+                margin-left: 0;
+            }
+            
+            .nav-links a {
+                margin-left: 0;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Navigation -->
+    <nav class="navbar">
+        <div class="container nav-container">
+            <a href="index.html" class="logo">
+                <span class="logo-icon">🅿️</span> ParkEase
+            </a>
+            <div class="nav-links">
+                <a href="home.html">Home</a>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Auth Container -->
+    <div class="auth-container">
+        <!-- Login Form -->
+        <div class="auth-card" id="login-form">
+            <div class="auth-header">
+                <h1>Welcome Back</h1>
+                <p class="auth-subtitle">Log in to manage your parking spots</p>
+            </div>
+            
+            <!-- Error Message -->
+            <div class="error-message" id="error-message">
+                <!-- Error message will be displayed here if any -->
+            </div>
+            
+            <!-- Success Message -->
+            <div class="success-message" id="success-message">
+                <!-- Success message will be displayed here if any -->
+            </div>
+            
+            <form class="auth-form" id="login-form-element">
+                <div class="form-group">
+                    <label for="login-email">Email Address</label>
+                    <input type="email" id="login-email" name="email" class="form-control" placeholder="your@email.com" required>
+                </div>
+                
+                <div class="form-group">
+                    <label for="login-password">Password</label>
+                    <input type="password" id="login-password" name="password" class="form-control" placeholder="••••••••" required>
+                </div>
+                
+                <div class="form-group form-check">
+                    <input type="checkbox" id="remember-me" name="remember">
+                    <label for="remember-me">Remember me</label>
+                </div>
+                
+                <button type="submit" class="btn btn-primary btn-block" id="login-button">
+                    Log In
+                </button>
+            </form>
+            
+            <div class="auth-footer">
+                <p><a href="#" id="forgot-password">Forgot password?</a></p>
+                <div class="switch-form">
+                    <p>Don't have an account?</p>
+                    <a href="signup.html">Sign Up</a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <footer>
+        <div class="container">
+            <div class="footer-content">
+                <div class="logo">
+                    <span class="logo-icon">🅿️</span> ParkEase
+                </div>
+                <div class="footer-links">
+                    <a href="#">Privacy Policy</a>
+                    <a href="#">Terms of Service</a>
+                    <a href="#">Help Center</a>
+                    <a href="#">Contact</a>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <script>
+        // Firebase configuration
+        const firebaseConfig = {
+            apiKey: "AIzaSyCuWYyl1KhigOGwoyeoqPMDIpOQoVRk0hE",
+            authDomain: "ballari-hackathon.firebaseapp.com",
+            projectId: "ballari-hackathon",
+            storageBucket: "ballari-hackathon.firebasestorage.app",
+            messagingSenderId: "473071133099",
+            appId: "1:473071133099:web:b4eb665747fca436f2f2ee",
+            measurementId: "G-DRZZ9MQF9C"
+        };
+
+        // Initialize Firebase
+        firebase.initializeApp(firebaseConfig);
+        const auth = firebase.auth();
+
+        document.addEventListener('DOMContentLoaded', function() {
+            const loginForm = document.getElementById('login-form-element');
+            const emailInput = document.getElementById('login-email');
+            const passwordInput = document.getElementById('login-password');
+            const errorMessage = document.getElementById('error-message');
+            const successMessage = document.getElementById('success-message');
+            const loginButton = document.getElementById('login-button');
+            const forgotPasswordLink = document.getElementById('forgot-password');
+
+            forgotPasswordLink.addEventListener('click', function(e) {
+                e.preventDefault();
+                const email = emailInput.value;
+                if (!email) {
+                    showError('Please enter your email address.');
+                    return;
+                }
+                // Send password reset email
+                auth.sendPasswordResetEmail(email)
+                    .then(() => {
+                        showSuccess('Password reset email sent!');
+                    })
+                    .catch((error) => {
+                        showError(error.message);
+                    });
+            });
+
+            // Login form submission
+            loginForm.addEventListener('submit', function(e) {
+                e.preventDefault();
+                
+                const email = emailInput.value;
+                const password = passwordInput.value;
+                const rememberMe = document.getElementById('remember-me').checked;
+                
+                // Reset messages
+                errorMessage.textContent = '';
+                successMessage.textContent = '';
+                
+                // Validate form
+                if (!email || !password) {
+                    showError('Please fill in all fields');
+                    return;
+                }
+                
+                // Show loading state
+                loginButton.innerHTML = '<span class="spinner"></span> Logging In...';
+                loginButton.disabled = true;
+                
+                // Sign in with Firebase Authentication
+                auth.setPersistence(rememberMe ? 
+                    firebase.auth.Auth.Persistence.LOCAL : 
+                    firebase.auth.Auth.Persistence.SESSION)
+                .then(() => {
+                    return auth.signInWithEmailAndPassword(email, password);
+                })
+                .then((userCredential) => {
+                    // Signed in successfully
+                    showSuccess('Login successful! Redirecting...');
+                    
+                    // Redirect to home page after 1 second
+                    setTimeout(() => {
+                        window.location.href = 'home.html';
+                    }, 1000);
+                })
+                .catch((error) => {
+                    // Handle errors
+                    let errorMsg = 'An error occurred during login.';
+                    
+                    switch(error.code) {
+                        case 'auth/invalid-email':
+                            errorMsg = 'The email address is not valid.';
+                            break;
+                        case 'auth/user-disabled':
+                            errorMsg = 'This account has been disabled.';
+                            break;
+                        case 'auth/user-not-found':
+                            errorMsg = 'No account found with this email.';
+                            break;
+                        case 'auth/wrong-password':
+                            errorMsg = 'Incorrect password.';
+                            break;
+                        default:
+                            errorMsg = error.message;
+                    }
+                    
+                    showError(errorMsg);
+                })
+                .finally(() => {
+                    // Reset button state
+                    loginButton.innerHTML = 'Log In';
+                    loginButton.disabled = false;
+                });
+            });
+            
+            // Forgot password functionality
+            forgotPasswordLink.addEventListener('click', function(e) {
+                e.preventDefault();
+                
+                const email = emailInput.value;
+                
+                if (!email) {
+                    showError('Please enter your email address first');
+                    return;
+                }
+                
+                // Send password reset email
+                auth.sendPasswordResetEmail(email)
+                    .then(() => {
+                        showSuccess('Password reset email sent! Check your inbox.');
+                    })
+                    .catch((error) => {
+                        showError('Error sending reset email: ' + error.message);
+                    });
+            });
+            
+            // Helper function to show error messages
+            function showError(message) {
+                errorMessage.textContent = message;
+            }
+            
+            // Helper function to show success messages
+            function showSuccess(message) {
+                successMessage.textContent = message;
+            }
+        });
+    </script>
+</body>
+</html>

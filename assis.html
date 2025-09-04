@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Parkease - Smart Parking with Voice</title>
+  <style>
+    body { font-family: Arial, sans-serif; background: #f4f4f9; margin: 0; padding: 20px; }
+    h1 { text-align: center; color: #333; }
+    .slots, .bookings { display: flex; gap: 15px; flex-wrap: wrap; justify-content: center; }
+    .card { background: white; border-radius: 10px; padding: 20px; box-shadow: 0 2px 5px rgba(0,0,0,0.1); width: 220px; text-align: center; }
+    button { padding: 10px 15px; border: none; border-radius: 5px; cursor: pointer; }
+    button.book { background: #4CAF50; color: white; }
+    button.disabled { background: gray; cursor: not-allowed; }
+    .section { margin-top: 40px; }
+    .voice-btn { background: #007BFF; color: white; margin-top: 20px; display: block; margin-left: auto; margin-right: auto; }
+  </style>
+</head>
+<body>
+  <h1>🚗 Parkease - Smart Parking Booking + Voice Assistant</h1>
+
+  <!-- Voice Command Button -->
+  <button class="voice-btn" onclick="startVoice()">🎙️ Voice Command</button>
+
+  <!-- Available Parking Slots -->
+  <div class="section">
+    <h2>Available Parking Slots</h2>
+    <div class="slots" id="slotList"></div>
+  </div>
+
+  <!-- My Bookings -->
+  <div class="section">
+    <h2>My Bookings</h2>
+    <div class="bookings" id="bookingList"></div>
+  </div>
+
+  <script>
+    // Sample Parking Slots Data
+    let slots = [
+      { id: 1, location: "Mall Parking", available: 10},
+      { id: 2, location: "Hospital Parking", available: 10 },
+      { id: 3, location: "Railway Station", available: 10 },
+      { id: 4, location: "Airport Parking", available: 10 }
+    ];
+
+    let bookings = [];
+
+    // Render slots
+    function renderSlots() {
+      const slotList = document.getElementById("slotList");
+      slotList.innerHTML = "";
+      slots.forEach(slot => {
+        const card = document.createElement("div");
+        card.className = "card";
+        card.innerHTML = `
+          <h3>${slot.location}</h3>
+          <p>Available: <strong>${slot.available}</strong></p>
+          <button 
+            class="book ${slot.available === 0 ? 'disabled' : ''}" 
+            onclick="bookSlot(${slot.id})" 
+            ${slot.available === 0 ? 'disabled' : ''}>
+            ${slot.available === 0 ? 'Full' : 'Book Now'}
+          </button>
+        `;
+        slotList.appendChild(card);
+      });
+    }
+
+    // Book Slot
+    function bookSlot(id) {
+      const slot = slots.find(s => s.id === id);
+      if (slot && slot.available > 0) {
+        slot.available -= 1;
+        bookings.push({ location: slot.location, time: new Date().toLocaleTimeString() });
+        renderSlots();
+        renderBookings();
+        speak(`Your slot at ${slot.location} is booked successfully.`);
+      }
+    }
+
+    // Render Bookings
+    function renderBookings() {
+      const bookingList = document.getElementById("bookingList");
+      bookingList.innerHTML = "";
+      bookings.forEach((b, i) => {
+        const card = document.createElement("div");
+        card.className = "card";
+        card.innerHTML = `
+          <h3>Booking #${i + 1}</h3>
+          <p>Location: ${b.location}</p>
+          <p>Time: ${b.time}</p>
+        `;
+        bookingList.appendChild(card);
+      });
+    }
+
+    // Voice Assistant: Speech Recognition + Commands
+    function startVoice() {
+      const recognition = new(window.SpeechRecognition || window.webkitSpeechRecognition)();
+      recognition.lang = "en-US";
+      recognition.onresult = (event) => {
+        let command = event.results[0][0].transcript.toLowerCase();
+        console.log("User said:", command);
+        handleCommand(command);
+      };
+      recognition.start();
+      speak("Listening for your command.");
+    }
+
+    function handleCommand(command) {
+      if (command.includes("book") && command.includes("mall")) {
+        bookSlot(1);
+      } else if (command.includes("book") && command.includes("hospital")) {
+        bookSlot(2);
+      } else if (command.includes("book") && command.includes("airport")) {
+        bookSlot(4);
+      } else if (command.includes("my bookings")) {
+        speak(`You have ${bookings.length} bookings.`);
+      } else {
+        speak("Sorry, I did not understand. Try saying book parking at Mall or show my bookings.");
+      }
+    }
+
+    // Voice Assistant: Speech Output
+    function speak(text) {
+      const speech = new SpeechSynthesisUtterance(text);
+      window.speechSynthesis.speak(speech);
+    }
+
+    // Initial Render
+    renderSlots();
+    renderBookings();
+  </script>
+</body>
+</html>
