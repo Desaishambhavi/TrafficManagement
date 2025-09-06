@@ -1,0 +1,224 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ParkEase - Payment</title>
+<style>
+  body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background: linear-gradient(135deg, rgba(0, 212, 255, 0.25), rgba(0, 0, 0, 0.95));
+    color: #fff;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+    margin: 0;
+  }
+  .payment-card, .receipt, .processing {
+    background: rgba(31, 41, 55, 0.95);
+    padding: 25px;
+    border-radius: 16px;
+    width: 450px;
+    box-shadow: 0 6px 20px rgba(0, 212, 255, 0.3);
+    text-align: center;
+  }
+  h2 {
+    color: #00d4ff;
+    margin-bottom: 20px;
+  }
+  .summary {
+    margin-bottom: 20px;
+    padding: 12px;
+    background: rgba(17, 24, 39, 0.8);
+    border-radius: 10px;
+  }
+  .summary p { margin: 5px 0; }
+  .options { margin-bottom: 20px; }
+  .option {
+    display: flex;
+    align-items: center;
+    padding: 12px;
+    margin-bottom: 12px;
+    background: rgba(55, 65, 81, 0.7);
+    border-radius: 10px;
+    cursor: pointer;
+    transition: transform 0.2s, background 0.2s;
+  }
+  .option:hover {
+    background: rgba(0, 212, 255, 0.3);
+    transform: scale(1.02);
+  }
+  .option input {
+    margin-right: 12px;
+    transform: scale(1.2);
+    cursor: pointer;
+  }
+  .details {
+    margin-bottom: 20px;
+    padding: 12px;
+    background: rgba(17, 24, 39, 0.85);
+    border-radius: 10px;
+    display: none;
+  }
+  input[type="text"], input[type="password"] {
+    width: 95%;
+    padding: 10px;
+    margin: 8px 0;
+    border-radius: 8px;
+    border: none;
+    outline: none;
+  }
+  .btn {
+    width: 100%;
+    padding: 12px;
+    background: linear-gradient(135deg, #00d4ff, #2563eb);
+    color: white;
+    border: none;
+    border-radius: 10px;
+    font-size: 16px;
+    cursor: pointer;
+    transition: background 0.2s, transform 0.2s;
+  }
+  .btn:hover {
+    background: linear-gradient(135deg, #00aacc, #1d4ed8);
+    transform: scale(1.05);
+  }
+  .qr { width: 200px; display: block; margin: 10px auto; border-radius: 8px; }
+  .processing { display: none; }
+  .spinner {
+    margin: 20px auto;
+    border: 6px solid rgba(0,0,0,0.2);
+    border-top: 6px solid #00d4ff;
+    border-radius: 50%;
+    width: 50px;
+    height: 50px;
+    animation: spin 1s linear infinite;
+  }
+  @keyframes spin { 100% { transform: rotate(360deg); } }
+  .receipt { display: none; text-align: left; }
+  .receipt p { margin: 6px 0; color: #00d4ff; }
+</style>
+</head>
+<body>
+
+<div class="payment-card" id="paymentCard">
+  <h2>Complete Your Payment</h2>
+  <div class="summary">
+    <p><b>Parking Slot:</b> MG Road Parking</p>
+    <p><b>Time:</b> 2 Hours</p>
+    <p><b>Amount:</b> ₹50</p>
+  </div>
+
+  <div class="options">
+    <label class="option"><input type="radio" name="payment" value="card"> 💳 Credit / Debit Card</label>
+    <label class="option"><input type="radio" name="payment" value="upi"> 📱 UPI (Google Pay / PhonePe)</label>
+    <label class="option"><input type="radio" name="payment" value="fastag"> 🚗 FASTag</label>
+  </div>
+
+  <div id="cardDetails" class="details">
+    <p><b>Enter Card Details:</b></p>
+    <input type="text" placeholder="Card Number">
+    <input type="text" placeholder="Expiry Date (MM/YY)">
+    <input type="password" placeholder="CVV">
+  </div>
+
+  <div id="upiDetails" class="details">
+    <p><b>Scan QR to Pay:</b></p>
+    <img src="https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=upi://pay?pa=parkease@upi&am=50" alt="UPI QR Code" class="qr">
+  </div>
+
+  <div id="fastagDetails" class="details">
+    <p><b>FASTag linked vehicle detected:</b></p>
+    <p>🚗 Vehicle No: KA-05-AB-1234</p>
+    <p>💳 FASTag Account: HDFC Bank</p>
+  </div>
+
+  <button class="btn" onclick="proceedPayment()">Proceed to Pay</button>
+</div>
+
+<div class="payment-card processing" id="processingCard">
+  <h2>Processing Payment...</h2>
+  <div class="spinner"></div>
+  <p>Please wait while we complete your transaction.</p>
+</div>
+
+<div class="payment-card receipt" id="receiptCard">
+  <h2>Payment Receipt</h2>
+  <p><b>Person Name:</b> John Doe</p>
+  <p><b>Car Number:</b> KA-05-AB-1234</p>
+  <p><b>Payment Amount:</b> ₹50</p>
+  <p><b>Payment Method:</b> <span id="methodText"></span></p>
+  <p><b>Time:</b> <span id="timeText"></span></p>
+  <p><b>Payment ID:</b> <span id="paymentID"></span></p>
+  <button class="btn" onclick="downloadReceipt()">Download Receipt</button>
+</div>
+
+<script>
+const radios = document.querySelectorAll('input[name="payment"]');
+const details = {
+  card: document.getElementById("cardDetails"),
+  upi: document.getElementById("upiDetails"),
+  fastag: document.getElementById("fastagDetails")
+};
+
+radios.forEach(r => {
+  r.addEventListener("change", () => {
+    for (let key in details) details[key].style.display = "none";
+    details[r.value].style.display = "block";
+  });
+});
+
+function proceedPayment() {
+  let selected = document.querySelector('input[name="payment"]:checked');
+  if (!selected) {
+    alert("⚠️ Please select a payment method.");
+    return;
+  }
+
+  // Hide payment card and show processing
+  document.getElementById("paymentCard").style.display = "none";
+  const processing = document.getElementById("processingCard");
+  processing.style.display = "block";
+
+  // Simulate payment delay
+  setTimeout(() => {
+    processing.style.display = "none";
+    showReceipt(selected.value);
+  }, 3000); // 3 seconds simulation
+}
+
+function showReceipt(method) {
+  const receipt = document.getElementById("receiptCard");
+  receipt.style.display = "block";
+
+  document.getElementById("methodText").innerText = method.toUpperCase();
+  const now = new Date();
+  document.getElementById("timeText").innerText = now.toLocaleString();
+  document.getElementById("paymentID").innerText = 'PID' + Math.floor(Math.random() * 1000000);
+
+  if ("Notification" in window && Notification.permission === "granted") {
+    new Notification("ParkEase 🚗", {
+      body: `Payment done using ${method.toUpperCase()}. Slot booked at MG Road Parking!`,
+      icon: "https://cdn-icons-png.flaticon.com/512/1000/1000921.png"
+    });
+  }
+}
+
+function downloadReceipt() {
+  const receipt = document.getElementById("receiptCard").innerText;
+  const blob = new Blob([receipt], { type: "text/plain" });
+  const link = document.createElement("a");
+  link.href = URL.createObjectURL(blob);
+  link.download = "ParkEase_Receipt.txt";
+  link.click();
+}
+
+// Request notification permission
+if ("Notification" in window && Notification.permission !== "granted") {
+  Notification.requestPermission();
+}
+</script>
+
+</body>
+</html>
