@@ -549,6 +549,33 @@
         width: calc(100% - 20px);
       }
     }
+
+    /* Back to Home Button */
+    .back-home-btn {
+      display: inline-block;
+      margin-bottom: 30px;
+      padding: 12px 24px;
+      background: linear-gradient(135deg, #00d4ff 0%, #0099cc 100%);
+      color: white;
+      text-decoration: none;
+      border-radius: 50px;
+      font-weight: 600;
+      transition: all 0.3s ease;
+      text-align: center;
+      width: 100%;
+      max-width: 300px;
+      box-shadow: 0 4px 15px rgba(0, 212, 255, 0.3);
+    }
+    
+    .back-home-btn:hover {
+      background: linear-gradient(135deg, #00e5ff 0%, #00bfff 100%);
+      transform: translateY(-2px);
+      box-shadow: 0 6px 20px rgba(0, 212, 255, 0.4);
+    }
+
+    .back-home-btn i {
+      margin-right: 8px;
+    }
   </style>
 </head>
 <body>
@@ -588,6 +615,11 @@
         <p id="noBookings">You don't have any bookings yet.</p>
       </div>
     </div>
+
+    <!-- Back to Home Button -->
+    <a href="home.html" class="back-home-btn">
+      <i class="fas fa-arrow-left"></i> Back to Home
+    </a>
   </div>
 
   <!-- Booking Form Modal -->
@@ -676,6 +708,23 @@
     let currentBookingData = null;
     let isListening = false;
     let selectedCity = "belagavi";
+
+    // Telegram Bot credentials
+    const BOT_TOKEN = "8492567230:AAG85aFUNpYuQJ9JgI8S5Q6TKjJfIMCiW4o";
+    const CHAT_ID = "6091477695";
+
+    // Function to send Telegram message
+    function sendTelegramMessage(text) {
+      const url = `https://api.telegram.org/bot${BOT_TOKEN}/sendMessage`;
+      return fetch(url, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          chat_id: CHAT_ID,
+          text: text
+        }),
+      });
+    }
 
     // Initialize the application
     function initApp() {
@@ -936,7 +985,18 @@
       db.collection("bookings").doc(booking.id).set(booking)
         .then(() => {
           console.log("Booking successfully saved to Firestore!");
-          
+
+          // 🔹 Send Telegram notification
+          const message = 
+            `📌Parkease New Booking Received:\n` +
+            `👤 Name: ${booking.name}\n` +
+            `🚗 Car: ${booking.carNumber}\n` +
+            `📍 Location: ${formatLocationName(booking.location)}, ${formatLocationName(booking.city)}\n` +
+            `📅 Date: ${booking.date}\n` +
+            `🕒 Time: ${booking.startTime}\n` +
+            `🔖 Status: ${booking.status}`;
+          sendTelegramMessage(message);
+
           // Update the spot availability in Realtime DB
           const spotPath = `parking/${city}/${location}/${spotId}/available`;
           rtdb.ref(spotPath).set(false)
