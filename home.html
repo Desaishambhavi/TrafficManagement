@@ -1288,6 +1288,28 @@
             50% { opacity: 0.5; }
             100% { opacity: 1; }
         }
+        .map-stats-bar {
+    display: flex;
+    gap: 24px;
+    margin-top: 8px;
+}
+.map-stat {
+    flex: 1;
+    background: var(--glass);
+    border-radius: 8px;
+    padding: 14px 0;
+    text-align: center;
+    font-weight: 600;
+    font-size: 1.1rem;
+    box-shadow: 0 2px 8px rgba(0,255,136,0.08);
+    border: 1px solid var(--glass-border);
+}
+.map-stat.available {
+    color: #00ff88;
+}
+.map-stat.occupied {
+    color: #ff4757;
+}
     </style>
 </head>
 <body>
@@ -1317,14 +1339,7 @@
         <div class="container">
             <h1>Smart Parking & Traffic Insights for a Smarter City</h1>
             <p>Book parking, avoid traffic, and reduce emissions — powered by next-generation AI technology.</p>
-            <div class="cta-buttons">
-                <a href="#" class="btn btn-primary">
-                    <i class="fas fa-rocket"></i> Get Started
-                </a>
-                <a href="#" class="btn btn-outline">
-                    <i class="fas fa-play"></i> Watch Demo
-                </a>
-            </div>
+           
         </div>
     </section>
 
@@ -1518,20 +1533,100 @@
             </div>
             <div class="booking-container">
                 <div class="search-box">
-                    <input type="text" class="search-input" placeholder="Enter destination or parking area...">
+                    <input type="text" class="search-input" id="searchInput" placeholder="Enter destination or parking area...">
                     <button class="search-btn">
                         <i class="fas fa-search"></i> Search
                     </button>
                 </div>
-                <div class="map-container">
-                    <div class="map-overlay">
-                        <h3><i class="fas fa-map-marker-alt"></i> Downtown Area</h3>
-                        <p><span class="stat-number" style="font-size: 1.5rem;">45</span> available spots</p>
-                        <div style="margin-top: 10px;">
-                            <span style="color: var(--secondary); font-size: 0.9rem;">
-                                <i class="fas fa-circle"></i> Live Updates
-                            </span>
-                        </div>
+                <div class="map-card-display">
+                    <!-- Maps will be injected here -->
+                    <div class="map-card-content" id="map-belagavi-nucleus-mall">
+                        <h3>Nucleus Mall – Belagavi</h3>
+                        <iframe src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3837.961502103894!2d74.50574177489943!3d15.858620584790822!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x3bbf66a4f7b89461%3A0xc3ac6deab9e4756b!2sNucleus%20Mall!5e0!3m2!1sen!2sin!4v1757143519500!5m2!1sen!2sin"
+                            allowfullscreen="" loading="lazy"></iframe>
+                            <div class="map-stats-bar">
+    <div class="map-stat available" id="stats-belagavi-nucleus-mall-available">--</div>
+    <div class="map-stat occupied" id="stats-belagavi-nucleus-mall-occupied">--</div>
+</div>
+                    </div>
+                    <div class="map-card-content" id="map-belagavi-kle-hospital" style="display:none;">
+                        <h3>KLE Hospital – Belagavi</h3>
+                        <iframe src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3837.399278494246!2d74.51710937490006!3d15.88813958476541!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x3bbf669850726b3b%3A0x87cfe20bdbd0abaa!2sKLE's%20Dr.%20Prabhakar%20Kore%20Hospital!5e0!3m2!1sen!2sin!4v1757143931024!5m2!1sen!2sin"
+                            allowfullscreen="" loading="lazy"></iframe><!-- KLE Hospital – Belagavi -->
+<div class="map-stats-bar">
+    <div class="map-stat available" id="stats-belagavi-kle-hospital-available">--</div>
+    <div class="map-stat occupied" id="stats-belagavi-kle-hospital-occupied">--</div>
+</div>
+
+                            
+                    </div>
+                    <div class="map-card-content" id="map-belagavi-dmart" style="display:none;">
+                        <h3>DMart Tilakwadi – Belagavi</h3>
+                        <iframe src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d30708.59796034319!2d74.46105797431639!3d15.826361700000005!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x3bbf65d55e7be06b%3A0x7bc2a9b7cfa12ea6!2sDMart%20Tilakwadi!5e0!3m2!1sen!2sin!4v1757144103498!5m2!1sen!2sin"
+                            allowfullscreen="" loading="lazy"></iframe>
+                            <div class="map-stats-bar">
+    <div class="map-stat available" id="stats-belagavi-dmart-available">--</div>
+    <div class="map-stat occupied" id="stats-belagavi-dmart-occupied">--</div>
+</div>
+                    </div>
+                    <div class="map-card-content" id="map-bangalore-banashankari" style="display:none;">
+                        <h3>Banashankari – Bangalore</h3>
+                        <iframe src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d31108.637365955718!2d77.53224319610914!3d12.934715142125073!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x3bae3e2c22c358b7%3A0x157068107f36f2ef!2sBanashankari%2C%20Bengaluru%2C%20Karnataka!5e0!3m2!1sen!2sin!4v1757145463076!5m2!1sen!2sin"
+                            allowfullscreen="" loading="lazy"></iframe>
+                            <div class="map-stats-bar">
+    <div class="map-stat available" id="stats-bangalore-banashankari-available">--</div>
+    <div class="map-stat occupied" id="stats-bangalore-banashankari-occupied">--</div>
+</div>
+                    </div>
+                    <div class="map-card-content" id="map-bangalore-mg-road" style="display:none;">
+                        <h3>MG Road – Bangalore</h3>
+                        <iframe src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3887.9556186449518!2d77.60688637484145!3d12.97469048734097!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x3bae1687393dbc13%3A0x8b70c8e652b73d9e!2sMahatma%20Gandhi%20Rd%2C%20Bengaluru%2C%20Karnataka!5e0!3m2!1sen!2sin!4v1757146433962!5m2!1sen!2sin"
+                            allowfullscreen="" loading="lazy"></iframe>
+                            <!-- MG Road – Bangalore -->
+<div class="map-stats-bar">
+    <div class="map-stat available" id="stats-bangalore-mg-road-available">--</div>
+    <div class="map-stat occupied" id="stats-bangalore-mg-road-occupied">--</div>
+</div>
+                    </div>
+                    <div class="map-card-content" id="map-bangalore-vijaynagar" style="display:none;">
+                        <h3>Vijaynagar – Bangalore</h3>
+                        <iframe src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d31104.155133226614!2d77.51214284615104!3d12.970610890038193!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x3bae3dd95efc3ae7%3A0xc90db791aedd9aad!2sVijayanagar%2C%20Bengaluru%2C%20Karnataka!5e0!3m2!1sen!2sin!4v1757145689918!5m2!1sen!2sin"
+                            allowfullscreen="" loading="lazy"></iframe>
+                            <!-- Vijayanagar – Bangalore -->
+<div class="map-stats-bar">
+    <div class="map-stat available" id="stats-bangalore-vijaynagar-available">--</div>
+    <div class="map-stat occupied" id="stats-bangalore-vijaynagar-occupied">--</div>
+</div>
+                    </div>
+                    <div class="map-card-content" id="map-pune-hinjawadi" style="display:none;">
+                        <h3>Hinjawadi – Pune</h3>
+                        <iframe src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d60502.99533007742!2d73.67601919568894!3d18.599394772204683!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x3bc2bbc048041bef%3A0xd0c9eb5ac3c3dee5!2sHinjawadi%2C%20Pune!5e0!3m2!1sen!2sin!4v1757145751122!5m2!1sen!2sin"
+                            allowfullscreen="" loading="lazy"></iframe><!-- Hinjawadi – Pune -->
+<div class="map-stats-bar">
+    <div class="map-stat available" id="stats-pune-hinjawadi-available">--</div>
+    <div class="map-stat occupied" id="stats-pune-hinjawadi-occupied">--</div>
+</div>
+
+                    </div>
+                    <div class="map-card-content" id="map-pune-koregaon-park" style="display:none;">
+                        <h3>Koregaon Park – Pune</h3>
+                        <iframe src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d15131.258698517004!2d73.87511000886204!3d18.53727510140965!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x3bc2c04e382a1275%3A0x1ec8ee3be12dcff2!2sKoregaon%20Park%2C%20Pune%2C%20Maharashtra!5e0!3m2!1sen!2sin!4v1757145789174!5m2!1sen!2sin"
+                            allowfullscreen="" loading="lazy"></iframe>
+                            <!-- Koregaon Park – Pune -->
+<div class="map-stats-bar">
+    <div class="map-stat available" id="stats-pune-koregaon-park-available">--</div>
+    <div class="map-stat occupied" id="stats-pune-koregaon-park-occupied">--</div>
+</div>
+                    </div>
+                    <div class="map-card-content" id="map-pune-shivajinagar" style="display:none;">
+                        <h3>Shivajinagar – Pune</h3>
+                        <iframe src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d30263.284407799303!2d73.82169990401091!3d18.532943884005913!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x3bc2c0791d785177%3A0x20d86a81ca743dc8!2sShivajinagar%2C%20Pune%2C%20Maharashtra!5e0!3m2!1sen!2sin!4v1757145841403!5m2!1sen!2sin"
+                            allowfullscreen="" loading="lazy"></iframe>
+                            <!-- Shivajinagar – Pune -->
+<div class="map-stats-bar">
+    <div class="map-stat available" id="stats-pune-shivajinagar-available">--</div>
+    <div class="map-stat occupied" id="stats-pune-shivajinagar-occupied">--</div>
+</div>
                     </div>
                 </div>
             </div>
@@ -1649,6 +1744,9 @@
         </div>
     </footer>
 
+    <!-- Add Firebase CDN scripts before your custom script -->
+    <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-database-compat.js"></script>
     <script>
         // Initialize charts with dark theme
         Chart.defaults.color = '#999999';
@@ -1759,6 +1857,7 @@
                             },
                             ticks: {
                                 color: '#999999'
+
                             }
                         },
                         x: {
@@ -1972,44 +2071,84 @@
             // Initial check in case elements are already in view
             animateOnScroll();
             
-            // Enhanced search functionality
-            const searchInput = document.querySelector('.search-input');
+            // Enhanced search functionality for map cards
+            const searchInput = document.getElementById('searchInput');
             const searchBtn = document.querySelector('.search-btn');
-            
-            searchBtn.addEventListener('click', function() {
-                const searchValue = searchInput.value.trim();
-                if (searchValue) {
-                    // Add loading state
-                    searchBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Searching...';
-                    searchBtn.disabled = true;
-                    
-                    // Simulate search
-                    setTimeout(() => {
-                        searchBtn.innerHTML = '<i class="fas fa-search"></i> Search';
-                        searchBtn.disabled = false;
-                        
-                        // Update map overlay with search results
-                        const overlay = document.querySelector('.map-overlay');
-                        overlay.innerHTML = `
-                            <h3><i class="fas fa-map-marker-alt"></i> ${searchValue}</h3>
-                            <p><span class="stat-number" style="font-size: 1.5rem;">${Math.floor(Math.random() * 50) + 10}</span> available spots</p>
-                            <div style="margin-top: 10px;">
-                                <span style="color: var(--secondary); font-size: 0.9rem;">
-                                    <i class="fas fa-circle"></i> Live Updates
-                                </span>
-                            </div>
-                        `;
-                        
-                        // Add pulse animation to indicate update
-                        overlay.style.animation = 'pulse 1s ease-in-out';
-                        setTimeout(() => {
-                            overlay.style.animation = '';
-                        }, 1000);
-                    }, 1500);
+            const mapCards = document.querySelectorAll('.map-card-content');
+
+            function showMapCard(searchValue) {
+                let found = false;
+                mapCards.forEach(card => {
+                    card.style.display = "none";
+                });
+
+                // Show all matching locations for a city or specific location
+                if (searchValue.includes("belagavi")) {
+                    found = true;
+                    document.getElementById("map-belagavi-nucleus-mall").style.display = "block";
+                    document.getElementById("map-belagavi-kle-hospital").style.display = "block";
+                    document.getElementById("map-belagavi-dmart").style.display = "block";
                 }
+                if (searchValue.includes("bangalore") || searchValue.includes("bengaluru")) {
+                    found = true;
+                    document.getElementById("map-bangalore-banashankari").style.display = "block";
+                    document.getElementById("map-bangalore-mg-road").style.display = "block";
+                    document.getElementById("map-bangalore-vijaynagar").style.display = "block";
+                }
+                if (searchValue.includes("pune")) {
+                    found = true;
+                    document.getElementById("map-pune-hinjawadi").style.display = "block";
+                    document.getElementById("map-pune-koregaon-park").style.display = "block";
+                    document.getElementById("map-pune-shivajinagar").style.display = "block";
+                }
+                // Show individual locations if searched specifically
+                if (searchValue.includes("nucleus")) {
+                    found = true;
+                    document.getElementById("map-belagavi-nucleus-mall").style.display = "block";
+                }
+                if (searchValue.includes("kle")) {
+                    found = true;
+                    document.getElementById("map-belagavi-kle-hospital").style.display = "block";
+                }
+                if (searchValue.includes("dmart")) {
+                    found = true;
+                    document.getElementById("map-belagavi-dmart").style.display = "block";
+                }
+                if (searchValue.includes("banashankari")) {
+                    found = true;
+                    document.getElementById("map-bangalore-banashankari").style.display = "block";
+                }
+                if (searchValue.includes("mg road")) {
+                    found = true;
+                    document.getElementById("map-bangalore-mg-road").style.display = "block";
+                }
+                if (searchValue.includes("vijayanagar")) {
+                    found = true;
+                    document.getElementById("map-bangalore-vijaynagar").style.display = "block";
+                }
+                if (searchValue.includes("hinjawadi")) {
+                    found = true;
+                    document.getElementById("map-pune-hinjawadi").style.display = "block";
+                }
+                if (searchValue.includes("koregaon")) {
+                    found = true;
+                    document.getElementById("map-pune-koregaon-park").style.display = "block";
+                }
+                if (searchValue.includes("shivajinagar")) {
+                    found = true;
+                    document.getElementById("map-pune-shivajinagar").style.display = "block";
+                }
+
+                if (!found) {
+                    alert("No maps available for this location yet.");
+                }
+            }
+
+            searchBtn.addEventListener('click', function() {
+                const searchValue = searchInput.value.trim().toLowerCase();
+                showMapCard(searchValue);
             });
-            
-            // Enter key support for search
+
             searchInput.addEventListener('keypress', function(e) {
                 if (e.key === 'Enter') {
                     searchBtn.click();
@@ -2046,6 +2185,68 @@
                 };
                 typeWriter();
             }, 1000);
+
+            // Firebase Realtime Database integration (browser version)
+            // TODO: Replace with your own Firebase project configuration
+            const firebaseConfig = {
+                apiKey: "AIzaSyCuWYyl1KhigOGwoyeoqPMDIpOQoVRk0hE",
+                authDomain: "ballari-hackathon.firebaseapp.com",
+                databaseURL: "https://ballari-hackathon-default-rtdb.firebaseio.com/",
+                projectId: "ballari-hackathon",
+                storageBucket: "ballari-hackathon.firebasestorage.app",
+                messagingSenderId: "473071133099",
+                appId: "1:473071133099:web:b4eb665747fca436f2f2ee",
+                measurementId: "G-DRZZ9MQF9C"
+            };
+
+            // Initialize Firebase
+            firebase.initializeApp(firebaseConfig);
+            const db = firebase.database();
+
+            // Map card IDs to database keys (match your DB structure exactly)
+            const locationKeys = {
+                "map-belagavi-nucleus-mall": "belagavi/nucleus-mall",
+                "map-belagavi-kle-hospital": "belagavi/kle-hospital",
+                "map-belagavi-dmart": "belagavi/dmart",
+                "map-bangalore-banashankari": "bangalore/banashankari",
+                "map-bangalore-mg-road": "bangalore/mg-road",
+                "map-bangalore-vijaynagar": "bangalore/vijaynagar",
+                "map-pune-hinjawadi": "pune/hinjawadi",
+                "map-pune-koregaon-park": "pune/koregaon-park",
+                "map-pune-shivajinagar": "pune/shivajinagar"
+            };
+
+            function updateAllStats() {
+                Object.entries(locationKeys).forEach(([cardId, dbKey]) => {
+                    const availableElem = document.getElementById(`stats-${dbKey.replace('/', '-')}-available`);
+                    const occupiedElem = document.getElementById(`stats-${dbKey.replace('/', '-')}-occupied`);
+                    if (availableElem && occupiedElem) {
+                        db.ref(`parking/${dbKey}`).get().then(snapshot => {
+                            if (snapshot.exists()) {
+                                const spots = snapshot.val();
+                                let availableCount = 0;
+                                let occupiedCount = 0;
+                                Object.values(spots).forEach(spot => {
+                                    if (spot.available === true) availableCount++;
+                                    else occupiedCount++;
+                                });
+                                availableElem.textContent = `${availableCount} Available`;
+                                occupiedElem.textContent = `${occupiedCount} Occupied`;
+                            } else {
+                                availableElem.textContent = "--";
+                                occupiedElem.textContent = "--";
+                            }
+                        }).catch(() => {
+                            availableElem.textContent = "--";
+                            occupiedElem.textContent = "--";
+                        });
+                    }
+                });
+            }
+
+            // Initial fetch and periodic update
+            updateAllStats();
+            setInterval(updateAllStats, 10000);
         });
     </script>
 </body>
