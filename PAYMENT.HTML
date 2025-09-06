@@ -4,6 +4,8 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>ParkEase - Payment</title>
+<!-- jsPDF library -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 <style>
   body {
     font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
@@ -151,7 +153,7 @@
   <p><b>Payment Method:</b> <span id="methodText"></span></p>
   <p><b>Time:</b> <span id="timeText"></span></p>
   <p><b>Payment ID:</b> <span id="paymentID"></span></p>
-  <button class="btn" onclick="downloadReceipt()">Download Receipt</button>
+  <button class="btn" onclick="downloadPDF()">Download Receipt</button>
 </div>
 
 <script>
@@ -176,16 +178,14 @@ function proceedPayment() {
     return;
   }
 
-  // Hide payment card and show processing
   document.getElementById("paymentCard").style.display = "none";
   const processing = document.getElementById("processingCard");
   processing.style.display = "block";
 
-  // Simulate payment delay
   setTimeout(() => {
     processing.style.display = "none";
     showReceipt(selected.value);
-  }, 3000); // 3 seconds simulation
+  }, 3000); // simulate 3s processing
 }
 
 function showReceipt(method) {
@@ -205,13 +205,31 @@ function showReceipt(method) {
   }
 }
 
-function downloadReceipt() {
-  const receipt = document.getElementById("receiptCard").innerText;
-  const blob = new Blob([receipt], { type: "text/plain" });
-  const link = document.createElement("a");
-  link.href = URL.createObjectURL(blob);
-  link.download = "ParkEase_Receipt.txt";
-  link.click();
+// Download receipt as PDF
+function downloadPDF() {
+  const { jsPDF } = window.jspdf;
+  const doc = new jsPDF();
+
+  const name = "John Doe";
+  const carNumber = "KA-05-AB-1234";
+  const amount = "50";
+  const slot = "MG Road Parking";
+  const method = document.getElementById("methodText").innerText;
+  const time = document.getElementById("timeText").innerText;
+  const paymentID = document.getElementById("paymentID").innerText;
+
+  doc.setFontSize(18);
+  doc.text("ParkEase Receipt", 105, 20, null, null, "center");
+  doc.setFontSize(12);
+  doc.text(`Name: ${name}`, 20, 40);
+  doc.text(`Car Number: ${carNumber}`, 20, 50);
+  doc.text(`Parking Slot: ${slot}`, 20, 60);
+  doc.text(`Payment Method: ${method}`, 20, 70);
+  doc.text(`Amount Paid: ₹${amount}`, 20, 80);
+  doc.text(`Time: ${time}`, 20, 90);
+  doc.text(`Payment ID: ${paymentID}`, 20, 100);
+
+  doc.save("ParkEase_Receipt.pdf");
 }
 
 // Request notification permission
