@@ -1,0 +1,1243 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ParkEase - Smart Parking Booking</title>
+  <!-- Firebase SDK -->
+  <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
+  <style>
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+    
+    body { 
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; 
+      background: linear-gradient(135deg, #0a0a0a 0%, #1a1a2e 50%, #16213e 100%);
+      margin: 0;
+      padding: 20px;
+      min-height: 100vh;
+      color: #ffffff;
+      position: relative;
+    }
+
+    body::before {
+      content: '';
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: 
+        radial-gradient(circle at 20% 80%, rgba(0, 212, 255, 0.15) 0%, transparent 50%),
+        radial-gradient(circle at 80% 20%, rgba(0, 212, 255, 0.1) 0%, transparent 50%);
+      pointer-events: none;
+      z-index: -1;
+    }
+    
+    .container {
+      max-width: 1200px;
+      margin: 0 auto;
+      background: rgba(0, 0, 0, 0.9);
+      border-radius: 20px;
+      padding: 30px;
+      box-shadow: 
+        0 20px 40px rgba(0, 0, 0, 0.5),
+        0 0 0 1px rgba(0, 212, 255, 0.2);
+      backdrop-filter: blur(10px);
+      border: 1px solid rgba(0, 212, 255, 0.1);
+    }
+    
+    header {
+      text-align: center;
+      padding: 30px 0;
+      margin-bottom: 40px;
+      background: linear-gradient(135deg, rgba(0, 212, 255, 0.2) 0%, rgba(0, 0, 0, 0.8) 100%);
+      border-radius: 15px;
+      color: white;
+      border: 1px solid rgba(0, 212, 255, 0.3);
+      position: relative;
+      overflow: hidden;
+    }
+
+    header::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: -100%;
+      width: 100%;
+      height: 100%;
+      background: linear-gradient(90deg, transparent, rgba(0, 212, 255, 0.1), transparent);
+      animation: shimmer 3s infinite;
+    }
+
+    @keyframes shimmer {
+      0% { left: -100%; }
+      100% { left: 100%; }
+    }
+    
+    h1 { 
+      color: #ffffff; 
+      font-size: 2.8rem;
+      margin-bottom: 15px;
+      text-shadow: 
+        0 0 20px rgba(0, 212, 255, 0.5),
+        2px 2px 4px rgba(0, 0, 0, 0.8);
+      font-weight: 700;
+      letter-spacing: -1px;
+    }
+    
+    .tagline {
+      color: #b8d4ff;
+      font-size: 1.3rem;
+      margin-bottom: 20px;
+      opacity: 0.9;
+    }
+    
+    .voice-section {
+      text-align: center;
+      margin-bottom: 50px;
+    }
+    
+    .voice-btn { 
+      background: linear-gradient(135deg, #00d4ff 0%, #0099cc 100%);
+      color: white;
+      padding: 18px 40px;
+      border: none;
+      border-radius: 50px;
+      cursor: pointer;
+      font-size: 1.2rem;
+      font-weight: 600;
+      box-shadow: 
+        0 8px 20px rgba(0, 212, 255, 0.3),
+        0 0 0 1px rgba(0, 212, 255, 0.2);
+      transition: all 0.3s ease;
+      display: inline-flex;
+      align-items: center;
+      gap: 12px;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+    }
+    
+    .voice-btn:hover {
+      background: linear-gradient(135deg, #00e5ff 0%, #00bfff 100%);
+      transform: translateY(-3px);
+      box-shadow: 
+        0 12px 30px rgba(0, 212, 255, 0.4),
+        0 0 0 1px rgba(0, 212, 255, 0.3);
+    }
+
+    .voice-btn:active {
+      transform: translateY(-1px);
+    }
+    
+    .city-selector {
+      text-align: center;
+      margin-bottom: 30px;
+      display: flex;
+      justify-content: center;
+      gap: 15px;
+      flex-wrap: wrap;
+    }
+    
+    .city-btn {
+      background: rgba(0, 0, 0, 0.7);
+      color: #ffffff;
+      padding: 12px 25px;
+      border: 2px solid rgba(0, 212, 255, 0.3);
+      border-radius: 25px;
+      cursor: pointer;
+      font-weight: 600;
+      transition: all 0.3s ease;
+      backdrop-filter: blur(10px);
+    }
+    
+    .city-btn.active {
+      background: linear-gradient(135deg, rgba(0, 212, 255, 0.3) 0%, rgba(0, 212, 255, 0.1) 100%);
+      border-color: #00d4ff;
+      color: #ffffff;
+      box-shadow: 0 0 20px rgba(0, 212, 255, 0.3);
+    }
+    
+    .city-btn:hover {
+      background: linear-gradient(135deg, rgba(0, 212, 255, 0.2) 0%, rgba(0, 212, 255, 0.05) 100%);
+      border-color: #00d4ff;
+      transform: translateY(-2px);
+    }
+    
+    .section {
+      background: rgba(0, 0, 0, 0.6);
+      border-radius: 20px;
+      padding: 30px;
+      margin-bottom: 30px;
+      box-shadow: 
+        0 10px 30px rgba(0, 0, 0, 0.3),
+        0 0 0 1px rgba(0, 212, 255, 0.1);
+      border: 1px solid rgba(0, 212, 255, 0.1);
+      backdrop-filter: blur(10px);
+    }
+    
+    h2 {
+      color: #ffffff;
+      margin-bottom: 25px;
+      padding-bottom: 15px;
+      border-bottom: 2px solid rgba(0, 212, 255, 0.3);
+      font-size: 1.8rem;
+      font-weight: 600;
+    }
+    
+    .slots, .bookings {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+      gap: 25px;
+      justify-items: center;
+    }
+    
+    .card {
+      background: linear-gradient(145deg, rgba(0, 0, 0, 0.8) 0%, rgba(0, 0, 0, 0.9) 100%);
+      border-radius: 15px;
+      padding: 25px;
+      width: 100%;
+      max-width: 320px;
+      text-align: center;
+      transition: all 0.3s ease;
+      border: 1px solid rgba(0, 212, 255, 0.2);
+      box-shadow: 0 8px 25px rgba(0, 0, 0, 0.3);
+      position: relative;
+      overflow: hidden;
+    }
+
+    .card::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 3px;
+      background: linear-gradient(90deg, #00d4ff, #0099cc, #00d4ff);
+      opacity: 0;
+      transition: opacity 0.3s ease;
+    }
+    
+    .card:hover {
+      transform: translateY(-8px);
+      box-shadow: 
+        0 15px 40px rgba(0, 0, 0, 0.4),
+        0 0 30px rgba(0, 212, 255, 0.2);
+      border-color: rgba(0, 212, 255, 0.4);
+    }
+
+    .card:hover::before {
+      opacity: 1;
+    }
+    
+    .card h3 {
+      color: #ffffff;
+      margin-bottom: 18px;
+      font-size: 1.4rem;
+      font-weight: 600;
+    }
+    
+    .card p {
+      color: #b8d4ff;
+      margin-bottom: 15px;
+      font-size: 1rem;
+      line-height: 1.4;
+    }
+    
+    .card strong {
+      color: #00d4ff;
+      font-size: 1.1rem;
+      font-weight: 600;
+    }
+    
+    button {
+      padding: 14px 24px;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      font-weight: 600;
+      transition: all 0.3s ease;
+      font-size: 1rem;
+    }
+    
+    button.book {
+      background: linear-gradient(135deg, #00d4ff 0%, #0099cc 100%);
+      color: white;
+      width: 100%;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      box-shadow: 0 4px 15px rgba(0, 212, 255, 0.3);
+    }
+    
+    button.book:hover {
+      background: linear-gradient(135deg, #00e5ff 0%, #00bfff 100%);
+      transform: translateY(-2px);
+      box-shadow: 0 6px 20px rgba(0, 212, 255, 0.4);
+    }
+    
+    button.disabled {
+      background: linear-gradient(135deg, #333333 0%, #555555 100%);
+      color: #888888;
+      cursor: not-allowed;
+      width: 100%;
+      box-shadow: none;
+    }
+    
+    /* Modal Styles */
+    .modal {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0, 0, 0, 0.8);
+      z-index: 1000;
+      justify-content: center;
+      align-items: center;
+      backdrop-filter: blur(5px);
+    }
+    
+    .modal-content {
+      background: linear-gradient(145deg, rgba(0, 0, 0, 0.95) 0%, rgba(10, 10, 30, 0.95) 100%);
+      border-radius: 20px;
+      width: 90%;
+      max-width: 500px;
+      padding: 40px;
+      box-shadow: 
+        0 20px 60px rgba(0, 0, 0, 0.5),
+        0 0 0 1px rgba(0, 212, 255, 0.3);
+      position: relative;
+      border: 1px solid rgba(0, 212, 255, 0.2);
+      max-height: 80vh;      /* 80% of viewport height */
+      overflow-y: auto;      /* Enable vertical scroll if needed */
+    }
+    
+    .close-btn {
+      position: absolute;
+      top: 20px;
+      right: 20px;
+      font-size: 1.8rem;
+      cursor: pointer;
+      color: #b8d4ff;
+      background: none;
+      border: none;
+      padding: 8px;
+      border-radius: 50%;
+      transition: all 0.3s ease;
+      width: 40px;
+      height: 40px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    
+    .close-btn:hover {
+      color: #ff4757;
+      background: rgba(255, 71, 87, 0.1);
+    }
+    
+    .form-group {
+      margin-bottom: 25px;
+    }
+    
+    .form-group label {
+      display: block;
+      margin-bottom: 8px;
+      font-weight: 600;
+      color: #ffffff;
+      font-size: 1rem;
+    }
+    
+    .form-group input,
+    .form-group select {
+      width: 100%;
+      padding: 15px 18px;
+      border: 2px solid rgba(0, 212, 255, 0.3);
+      border-radius: 10px;
+      font-size: 16px;
+      background: rgba(0, 0, 0, 0.7);
+      color: #ffffff;
+      backdrop-filter: blur(10px);
+      transition: all 0.3s ease;
+    }
+    
+    .form-group input:focus,
+    .form-group select:focus {
+      border-color: #00d4ff;
+      outline: none;
+      box-shadow: 0 0 0 3px rgba(0, 212, 255, 0.2);
+      background: rgba(0, 0, 0, 0.8);
+    }
+
+    .form-group input::placeholder {
+      color: #888888;
+    }
+
+    .form-group select option {
+      background: rgba(0, 0, 0, 0.9);
+      color: #ffffff;
+    }
+    
+    .submit-btn {
+      background: linear-gradient(135deg, #00d4ff 0%, #0099cc 100%);
+      color: white;
+      width: 100%;
+      padding: 18px;
+      font-size: 1.2rem;
+      margin-top: 15px;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      box-shadow: 0 6px 20px rgba(0, 212, 255, 0.3);
+    }
+    
+    .submit-btn:hover {
+      background: linear-gradient(135deg, #00e5ff 0%, #00bfff 100%);
+      transform: translateY(-2px);
+      box-shadow: 0 8px 25px rgba(0, 212, 255, 0.4);
+    }
+    
+    .booking-card {
+      background: linear-gradient(145deg, rgba(0, 0, 0, 0.8) 0%, rgba(0, 0, 0, 0.9) 100%);
+      border-radius: 15px;
+      padding: 25px;
+      width: 100%;
+      max-width: 350px;
+      border-left: 4px solid #00d4ff;
+      border: 1px solid rgba(0, 212, 255, 0.2);
+      box-shadow: 0 8px 25px rgba(0, 0, 0, 0.3);
+    }
+    
+    .booking-card h3 {
+      color: #ffffff;
+      margin-bottom: 18px;
+      padding-bottom: 12px;
+      border-bottom: 1px solid rgba(0, 212, 255, 0.2);
+      font-size: 1.3rem;
+    }
+
+    .booking-card p {
+      color: #b8d4ff;
+      margin-bottom: 8px;
+      line-height: 1.4;
+    }
+
+    .booking-card strong {
+      color: #00d4ff;
+    }
+    
+    .booking-card button {
+      background: linear-gradient(135deg, #ff4757 0%, #c44569 100%);
+      color: #fff;
+      border: none;
+      padding: 12px 20px;
+      border-radius: 8px;
+      font-weight: 600;
+      cursor: pointer;
+      margin-top: 15px;
+      transition: all 0.3s ease;
+      text-transform: uppercase;
+      font-size: 0.9rem;
+      box-shadow: 0 4px 15px rgba(255, 71, 87, 0.3);
+    }
+    
+    .booking-card button:hover {
+      background: linear-gradient(135deg, #ff3742 0%, #b33a5c 100%);
+      transform: translateY(-2px);
+      box-shadow: 0 6px 20px rgba(255, 71, 87, 0.4);
+    }
+    
+    .voice-status {
+      text-align: center;
+      margin-top: 20px;
+      font-style: italic;
+      color: #b8d4ff;
+      min-height: 24px;
+      font-size: 1rem;
+    }
+    
+    .loading {
+      text-align: center;
+      color: #b8d4ff;
+      font-size: 1.2rem;
+      margin: 20px 0;
+    }
+    
+    .spot-info {
+      display: flex;
+      justify-content: space-between;
+      margin: 8px 0;
+      padding: 8px;
+      background: rgba(0, 212, 255, 0.05);
+      border-radius: 6px;
+      border: 1px solid rgba(0, 212, 255, 0.1);
+    }
+    
+    .spot-available {
+      color: #2ed573;
+      font-weight: bold;
+    }
+    
+    .spot-unavailable {
+      color: #ff4757;
+      font-weight: bold;
+    }
+
+    /* Scrollbar Styling */
+    ::-webkit-scrollbar {
+      width: 8px;
+    }
+
+    ::-webkit-scrollbar-track {
+      background: rgba(0, 0, 0, 0.3);
+    }
+
+    ::-webkit-scrollbar-thumb {
+      background: rgba(0, 212, 255, 0.5);
+      border-radius: 4px;
+    }
+
+    ::-webkit-scrollbar-thumb:hover {
+      background: rgba(0, 212, 255, 0.7);
+    }
+    
+    @media (max-width: 768px) {
+      .container {
+        padding: 20px;
+        margin: 10px;
+      }
+      
+      .slots, .bookings {
+        grid-template-columns: 1fr;
+      }
+      
+      .card, .booking-card {
+        max-width: 100%;
+      }
+      
+      h1 {
+        font-size: 2.2rem;
+      }
+
+      .tagline {
+        font-size: 1.1rem;
+      }
+      
+      .city-selector {
+        flex-direction: column;
+        align-items: center;
+      }
+
+      .city-btn {
+        width: 200px;
+        margin-bottom: 10px;
+      }
+
+      .modal {
+        padding: 10px;
+      }
+
+      .modal-content {
+        padding: 30px 20px;
+        margin: 10px auto;
+        max-height: calc(100vh - 20px);
+        width: calc(100% - 20px);
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <header>
+      <h1>ParkEase - Smart Parking Booking</h1>
+      <p class="tagline">Book your parking spot with ease using voice commands or traditional booking</p>
+    </header>
+
+    <!-- Voice Command Button -->
+    <div class="voice-section">
+      <button class="voice-btn" onclick="startVoice()">
+        <span>🎙</span> Voice Command
+      </button>
+      <div class="voice-status" id="voiceStatus">Ready for voice commands</div>
+    </div>
+
+    <!-- City Selector -->
+    <div class="city-selector" id="citySelector">
+      <button class="city-btn active" onclick="selectCity('belagavi')">Belagavi</button>
+      <button class="city-btn" onclick="selectCity('bangalore')">Bangalore</button>
+      <button class="city-btn" onclick="selectCity('pune')">Pune</button>
+    </div>
+
+    <!-- Available Parking Slots -->
+    <div class="section">
+      <h2>Available Parking Locations</h2>
+      <div class="slots" id="slotList">
+        <div class="loading">Loading parking locations...</div>
+      </div>
+    </div>
+
+    <!-- My Bookings -->
+    <div class="section">
+      <h2>My Bookings</h2>
+      <div class="bookings" id="bookingList">
+        <p id="noBookings">You don't have any bookings yet.</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Booking Form Modal -->
+  <div class="modal" id="bookingModal">
+    <div class="modal-content">
+      <button class="close-btn" onclick="closeModal()">&times;</button>
+      <h2>Book Parking Spot</h2>
+      <form id="bookingForm">
+        <div class="form-group">
+          <label for="name">Full Name</label>
+          <input type="text" id="name" required placeholder="Enter your full name">
+        </div>
+        
+        <div class="form-group">
+          <label for="carNumber">Car Number</label>
+          <input type="text" id="carNumber" required placeholder="Enter your car number">
+        </div>
+        
+        <div class="form-group">
+          <label for="date">Date</label>
+          <input type="date" id="date" required>
+        </div>
+        
+        <div class="form-group">
+          <label for="startTime">Start Time</label>
+          <input type="time" id="startTime" required>
+        </div>
+        
+        <div class="form-group">
+          <label for="duration">Duration (hours)</label>
+          <input type="number" id="duration" min="1" max="24" value="2" required>
+        </div>
+        
+        <div class="form-group">
+          <label for="city">City</label>
+          <select id="city" required onchange="updateLocations()">
+            <option value="">Select a city</option>
+            <option value="belagavi">Belagavi</option>
+            <option value="bangalore">Bangalore</option>
+            <option value="pune">Pune</option>
+          </select>
+        </div>
+        
+        <div class="form-group">
+          <label for="location">Location</label>
+          <select id="location" required onchange="updateSpots()">
+            <option value="">Select a location</option>
+          </select>
+        </div>
+        
+        <div class="form-group">
+          <label for="spot">Parking Spot</label>
+          <select id="spot" required>
+            <option value="">Select a parking spot</option>
+          </select>
+        </div>
+        
+        <button type="submit" class="submit-btn">Confirm Booking</button>
+      </form>
+    </div>
+  </div>
+
+  <script>
+    // Firebase configuration
+    const firebaseConfig = {
+      apiKey: "AIzaSyCuWYyl1KhigOGwoyeoqPMDIpOQoVRk0hE",
+      authDomain: "ballari-hackathon.firebaseapp.com",
+      databaseURL: "https://ballari-hackathon-default-rtdb.firebaseio.com",
+      projectId: "ballari-hackathon",
+      storageBucket: "ballari-hackathon.firebasestorage.app",
+      messagingSenderId: "473071133099",
+      appId: "1:473071133099:web:b4eb665747fca436f2f2ee",
+      measurementId: "G-DRZZ9MQF9C"
+    };
+
+    // Initialize Firebase
+    firebase.initializeApp(firebaseConfig);
+    const db = firebase.firestore();
+    const rtdb = firebase.database();
+
+    // Parking data structure
+    let cities = [];
+    let locations = {};
+    let spots = {};
+    let bookings = [];
+    let currentBookingData = null;
+    let isListening = false;
+    let selectedCity = "belagavi";
+
+    // Initialize the application
+    function initApp() {
+      fetchParkingData();
+      fetchBookings();
+    }
+
+    // Select city to view
+    function selectCity(city) {
+      selectedCity = city;
+      
+      // Update active button
+      const buttons = document.querySelectorAll('.city-btn');
+      buttons.forEach(btn => {
+        if (btn.textContent.toLowerCase() === city.toLowerCase()) {
+          btn.classList.add('active');
+        } else {
+          btn.classList.remove('active');
+        }
+      });
+      
+      // Update locations display
+      renderLocations();
+    }
+
+    // Fetch parking data from Realtime Database
+    function fetchParkingData() {
+      rtdb.ref('parking').once('value')
+        .then((snapshot) => {
+          const data = snapshot.val();
+          if (data) {
+            processParkingData(data);
+            renderLocations();
+          } else {
+            console.error("No parking data found");
+            document.getElementById('slotList').innerHTML = '<p class="loading">Error loading parking data</p>';
+          }
+        })
+        .catch((error) => {
+          console.error("Error fetching parking data:", error);
+          document.getElementById('slotList').innerHTML = '<p class="loading">Error loading parking data</p>';
+        });
+    }
+
+    // Process parking data from Firebase
+    function processParkingData(data) {
+      cities = Object.keys(data);
+      locations = {};
+      spots = {};
+      
+      cities.forEach(city => {
+        locations[city] = Object.keys(data[city]);
+        
+        locations[city].forEach(location => {
+          if (data[city][location]) {
+            // Extract all spots for this location
+            spots[`${city}-${location}`] = [];
+            
+            // Iterate through all properties to find spots
+            for (const key in data[city][location]) {
+              if (key.startsWith('spot')) {
+                const spotData = data[city][location][key];
+                // Check if it's an object with properties or just a string
+                if (typeof spotData === 'object' && spotData !== null) {
+                  spots[`${city}-${location}`].push({
+                    id: key,
+                    available: spotData.available !== undefined ? spotData.available : true,
+                    number: spotData.number || parseInt(key.replace('spot', '')),
+                    type: spotData.type || 'standard',
+                    location: spotData.location || location
+                  });
+                } else {
+                  // It's probably just a spot name without details
+                  spots[`${city}-${location}`].push({
+                    id: key,
+                    available: true,
+                    number: parseInt(key.replace('spot', '')),
+                    type: 'standard',
+                    location: location
+                  });
+                }
+              }
+            }
+          }
+        });
+      });
+    }
+
+    // Update location dropdown based on selected city
+    function updateLocations() {
+      const citySelect = document.getElementById('city');
+      const locationSelect = document.getElementById('location');
+      const spotSelect = document.getElementById('spot');
+      
+      const city = citySelect.value;
+      locationSelect.innerHTML = '<option value="">Select a location</option>';
+      spotSelect.innerHTML = '<option value="">Select a parking spot</option>';
+      
+      if (city && locations[city]) {
+        locations[city].forEach(location => {
+          const option = document.createElement('option');
+          option.value = location;
+          option.textContent = formatLocationName(location);
+          locationSelect.appendChild(option);
+        });
+      }
+    }
+
+    // Format location name for display
+    function formatLocationName(location) {
+      // Convert from snake-case or kebab-case to proper name
+      return location
+        .split(/[-_]/)
+        .map(word => word.charAt(0).toUpperCase() + word.slice(1))
+        .join(' ');
+    }
+
+    // Update spots dropdown based on selected location
+    function updateSpots() {
+      const citySelect = document.getElementById('city');
+      const locationSelect = document.getElementById('location');
+      const spotSelect = document.getElementById('spot');
+      
+      const city = citySelect.value;
+      const location = locationSelect.value;
+      spotSelect.innerHTML = '<option value="">Select a parking spot</option>';
+      
+      if (city && location && spots[`${city}-${location}`]) {
+        // Filter available spots only
+        const availableSpots = spots[`${city}-${location}`].filter(spot => spot.available);
+        
+        availableSpots.forEach(spot => {
+          const option = document.createElement('option');
+          option.value = spot.id;
+          option.textContent = `Spot ${spot.number} (${spot.type})`;
+          spotSelect.appendChild(option);
+        });
+        
+        if (availableSpots.length === 0) {
+          const option = document.createElement('option');
+          option.value = "";
+          option.textContent = "No available spots";
+          option.disabled = true;
+          spotSelect.appendChild(option);
+        }
+      }
+    }
+
+    // Render locations (not individual spots)
+    function renderLocations() {
+      const slotList = document.getElementById("slotList");
+      slotList.innerHTML = "";
+      
+      if (cities.length === 0) {
+        slotList.innerHTML = '<p class="loading">No parking data available</p>';
+        return;
+      }
+      
+      // Show only selected city locations
+      const cityLocations = locations[selectedCity] || [];
+      
+      if (cityLocations.length === 0) {
+        slotList.innerHTML = '<p class="loading">No locations available in ' + selectedCity + '</p>';
+        return;
+      }
+      
+      cityLocations.forEach(location => {
+        const locationSpots = spots[`${selectedCity}-${location}`] || [];
+        const availableCount = locationSpots.filter(spot => spot.available).length;
+        const totalCount = locationSpots.length;
+        
+        const card = document.createElement("div");
+        card.className = "card";
+        card.innerHTML = `
+          <h3>${formatLocationName(location)}</h3>
+          <p>City: <strong>${formatLocationName(selectedCity)}</strong></p>
+          <p>Available: <strong>${availableCount}/${totalCount}</strong></p>
+          <button class="book ${availableCount === 0 ? 'disabled' : ''}" 
+            onclick="openBookingForm('${selectedCity}', '${location}')" 
+            ${availableCount === 0 ? 'disabled' : ''}>
+            ${availableCount === 0 ? 'Fully Booked' : 'Book Now'}
+          </button>
+        `;
+        slotList.appendChild(card);
+      });
+    }
+
+    // Open booking form
+    function openBookingForm(city, location) {
+      const modal = document.getElementById("bookingModal");
+      modal.style.display = "flex";
+      
+      // Set default values
+      const today = new Date();
+      const tomorrow = new Date(today);
+      tomorrow.setDate(tomorrow.getDate() + 1);
+      
+      document.getElementById("date").valueAsDate = tomorrow;
+      document.getElementById("startTime").value = "10:00";
+      
+      // Set city and location
+      document.getElementById("city").value = city;
+      updateLocations();
+      document.getElementById("location").value = location;
+      updateSpots();
+      
+      // Store current booking data
+      currentBookingData = { city, location };
+    }
+
+    // Close modal
+    function closeModal() {
+      const modal = document.getElementById("bookingModal");
+      modal.style.display = "none";
+      document.getElementById("bookingForm").reset();
+      currentBookingData = null;
+    }
+
+    // Handle form submission
+    document.getElementById("bookingForm").addEventListener("submit", function(e) {
+      e.preventDefault();
+      
+      const name = document.getElementById("name").value;
+      const carNumber = document.getElementById("carNumber").value;
+      const date = document.getElementById("date").value;
+      const startTime = document.getElementById("startTime").value;
+      const duration = document.getElementById("duration").value;
+      const city = document.getElementById("city").value;
+      const location = document.getElementById("location").value;
+      const spotId = document.getElementById("spot").value;
+      
+      // Find the selected spot data
+      const spotData = spots[`${city}-${location}`].find(spot => spot.id === spotId);
+      
+      if (!spotData) {
+        alert("Invalid spot selection. Please try again.");
+        return;
+      }
+      
+      // Create booking object
+      const booking = {
+        id: Date.now().toString(),
+        name,
+        carNumber,
+        date,
+        startTime,
+        duration: parseInt(duration),
+        city,
+        location,
+        spotId,
+        spotNumber: spotData.number,
+        spotType: spotData.type,
+        bookedAt: new Date().toISOString(),
+        status: 'active'
+      };
+      
+      // Save to Firestore (bookings collection)
+      db.collection("bookings").doc(booking.id).set(booking)
+        .then(() => {
+          console.log("Booking successfully saved to Firestore!");
+          
+          // Update the spot availability in Realtime DB
+          const spotPath = `parking/${city}/${location}/${spotId}/available`;
+          rtdb.ref(spotPath).set(false)
+            .then(() => {
+              console.log("Spot availability updated in Realtime DB");
+              
+              // Update local data
+              const spotIndex = spots[`${city}-${location}`].findIndex(spot => spot.id === spotId);
+              if (spotIndex !== -1) {
+                spots[`${city}-${location}`][spotIndex].available = false;
+              }
+              
+              // Add to local bookings array
+              bookings.push(booking);
+              
+              // Update UI
+              renderLocations();
+              renderBookings();
+              
+              // Close modal
+              closeModal();
+              
+              // Read confirmation aloud
+              readBookingConfirmation(booking);
+            })
+            .catch((error) => {
+              console.error("Error updating spot availability: ", error);
+              alert("Booking created but there was an error updating spot availability.");
+            });
+        })
+        .catch((error) => {
+          console.error("Error saving booking: ", error);
+          alert("There was an error saving your booking. Please try again.");
+        });
+    });
+
+    // Fetch bookings from Firestore
+    function fetchBookings() {
+      db.collection("bookings").orderBy("bookedAt", "desc").get()
+        .then((querySnapshot) => {
+          bookings = [];
+          querySnapshot.forEach((doc) => {
+            bookings.push(doc.data());
+          });
+          renderBookings();
+        })
+        .catch((error) => {
+          console.error("Error getting bookings: ", error);
+          // If collection doesn't exist, we'll just show no bookings
+          renderBookings();
+        });
+    }
+
+    // Read booking confirmation aloud
+    function readBookingConfirmation(booking) {
+      const confirmationText = `
+        Booking confirmed! 
+        Your parking at ${formatLocationName(booking.location)} in ${formatLocationName(booking.city)} has been booked successfully.
+        Details: Name: ${booking.name}, 
+        Car Number: ${booking.carNumber}, 
+        Date: ${formatDate(booking.date)}, 
+        Start Time: ${booking.startTime}.
+        Spot: ${booking.spotId}.
+        Thank you for using ParkEase!
+      `;
+      
+      speak(confirmationText);
+    }
+
+    // Format date for speech
+    function formatDate(dateString) {
+      const date = new Date(dateString);
+      return date.toLocaleDateString('en-US', { 
+        weekday: 'long', 
+        year: 'numeric', 
+        month: 'long', 
+        day: 'numeric' 
+      });
+    }
+
+    // Render bookings
+    function renderBookings() {
+      const bookingList = document.getElementById("bookingList");
+      const noBookings = document.getElementById("noBookings");
+
+      if (bookings.length === 0) {
+        noBookings.style.display = "block";
+        bookingList.innerHTML = "";
+        return;
+      }
+
+      noBookings.style.display = "none";
+      
+      // Clear everything except the placeholder
+      bookingList.innerHTML = "";
+
+      bookings.forEach(booking => {
+        const card = document.createElement("div");
+        card.className = "booking-card";
+        card.innerHTML = `
+          <h3>${formatLocationName(booking.location)} (${formatLocationName(booking.city)})</h3>
+          <p><strong>Spot:</strong> ${booking.spotId} (${booking.spotType})</p>
+          <p><strong>Name:</strong> ${booking.name}</p>
+          <p><strong>Car Number:</strong> ${booking.carNumber}</p>
+          <p><strong>Date:</strong> ${booking.date}</p>
+          <p><strong>Start Time:</strong> ${booking.startTime}</p>
+          <p><strong>Duration:</strong> ${booking.duration} hours</p>
+          <p><strong>Booked on:</strong> ${new Date(booking.bookedAt).toLocaleString()}</p>
+          <p><strong>Status:</strong> ${booking.status}</p>
+          <button onclick="cancelBooking('${booking.id}', '${booking.city}', '${booking.location}', '${booking.spotId}')">Cancel Booking</button>
+        `;
+        bookingList.appendChild(card);
+      });
+    }
+
+    // Cancel booking
+    function cancelBooking(bookingId, city, location, spotId) {
+      if (confirm("Are you sure you want to cancel this booking?")) {
+        // Update in Firestore
+        db.collection("bookings").doc(bookingId).update({
+          status: 'cancelled'
+        })
+        .then(() => {
+          console.log("Booking successfully cancelled!");
+          
+          // Update the spot availability in Realtime DB
+          const spotPath = `parking/${city}/${location}/${spotId}/available`;
+          rtdb.ref(spotPath).set(true)
+            .then(() => {
+              console.log("Spot availability updated in Realtime DB");
+              
+              // Update local data
+              const spotIndex = spots[`${city}-${location}`].findIndex(spot => spot.id === spotId);
+              if (spotIndex !== -1) {
+                spots[`${city}-${location}`][spotIndex].available = true;
+              }
+              
+              // Remove from local array
+              const index = bookings.findIndex(b => b.id === bookingId);
+              if (index > -1) {
+                const booking = bookings[index];
+                bookings.splice(index, 1);
+                
+                // Update UI
+                renderLocations();
+                renderBookings();
+                
+                speak(`Your booking at ${formatLocationName(booking.location)} has been cancelled.`);
+              }
+            })
+            .catch((error) => {
+              console.error("Error updating spot availability: ", error);
+              alert("Booking cancelled but there was an error updating spot availability.");
+            });
+        })
+        .catch((error) => {
+          console.error("Error cancelling booking: ", error);
+          alert("There was an error cancelling your booking. Please try again.");
+        });
+      }
+    }
+
+    // Voice Assistant: Speech Recognition + Commands
+    function startVoice() {
+      if (isListening) return;
+      
+      const recognition = new(window.SpeechRecognition || window.webkitSpeechRecognition)();
+      recognition.lang = "en-US";
+      recognition.continuous = false;
+      
+      updateVoiceStatus("Listening... Speak now");
+      speak("Listening for your command. Please say something like 'Book parking at Nucleus Mall in Belagavi' or 'Show my bookings'.");
+      
+      recognition.onresult = (event) => {
+        let command = event.results[0][0].transcript.toLowerCase();
+        console.log("User said:", command);
+        updateVoiceStatus(`Heard: "${command}"`);
+        handleCommand(command);
+      };
+      
+      recognition.onerror = (event) => {
+        console.error("Speech recognition error", event.error);
+        updateVoiceStatus("Error: " + event.error);
+        speak("Sorry, I didn't catch that. Please try again.");
+        isListening = false;
+      };
+      
+      recognition.onend = () => {
+        isListening = false;
+        updateVoiceStatus("Ready for voice commands");
+      };
+      
+      isListening = true;
+      recognition.start();
+    }
+
+    function updateVoiceStatus(message) {
+      document.getElementById("voiceStatus").textContent = message;
+    }
+
+    function handleCommand(command) {
+      if (command.includes("book")) {
+        // Extract city and location from command
+        let city = null;
+        let location = null;
+        
+        if (command.includes("bangalore") || command.includes("bengaluru")) {
+          city = "bangalore";
+          if (command.includes("banashankari")) location = "banashankari";
+          else if (command.includes("mg road") || command.includes("mg-road")) location = "mg-road";
+          else if (command.includes("vijaynagar")) location = "vijaynagar";
+        } 
+        else if (command.includes("belagavi") || command.includes("belgaum")) {
+          city = "belagavi";
+          if (command.includes("nucleus") || command.includes("mall")) location = "nucleus-mall";
+          else if (command.includes("dmart") || command.includes("d-mart") || command.includes("d mart")) location = "dmart";
+          else if (command.includes("kle") || command.includes("hospital")) location = "kle-hospital";
+        }
+        else if (command.includes("pune")) {
+          city = "pune";
+          if (command.includes("hinjawadi")) location = "hinjawadi";
+          else if (command.includes("koregaon") || command.includes("park")) location = "koregaon-park";
+          else if (command.includes("shivajinagar")) location = "shivajinagar";
+        }
+        
+        if (city && location) {
+          openBookingForm(city, location);
+          speak(`Opening booking form for ${formatLocationName(location)} in ${formatLocationName(city)}.`);
+        } else {
+          speak("Please specify a valid city and location to book parking.");
+        }
+      } else if (command.includes("my bookings") || command.includes("show bookings")) {
+        if (bookings.length > 0) {
+          const bookingText = bookings.map((b, i) => 
+            `Booking ${i+1}: ${formatLocationName(b.location)} in ${formatLocationName(b.city)} on ${formatDate(b.date)} at ${b.startTime} for ${b.name}`
+          ).join(". ");
+          speak(`You have ${bookings.length} bookings. ${bookingText}`);
+        } else {
+          speak("You don't have any bookings yet.");
+        }
+      } else if (command.includes("available") || command.includes("slots")) {
+        let availableText = "";
+        cities.forEach(city => {
+          locations[city].forEach(location => {
+            const spotCount = spots[`${city}-${location}`] ? 
+              spots[`${city}-${location}`].filter(spot => spot.available).length : 0;
+            const totalCount = spots[`${city}-${location}`] ? spots[`${city}-${location}`].length : 0;
+            availableText += `${formatLocationName(location)} in ${formatLocationName(city)} has ${spotCount} of ${totalCount} spots available. `;
+          });
+        });
+        speak(`Current availability: ${availableText}`);
+      } else if (command.includes("help") || command.includes("what can i say")) {
+        speak(`
+          You can say: 
+          Book parking in Bangalore at Banashankari,
+          Book parking in Belagavi at D Mart,
+          Book parking in Pune at Koregaon Park,
+          Show my bookings,
+          What slots are available,
+          Or just say help.
+        `);
+      } else {
+        speak("Sorry, I didn't understand. Try saying 'Book parking in Bangalore at Banashankari' or 'Show my bookings'. Say 'help' for more options.");
+      }
+    }
+
+    // Voice Assistant: Speech Output
+    function speak(text) {
+      // Cancel any previous speech
+      if (window.speechSynthesis) {
+        window.speechSynthesis.cancel();
+        
+        const speech = new SpeechSynthesisUtterance(text);
+        speech.rate = 1.0;
+        speech.pitch = 1.0;
+        speech.volume = 1.0;
+        
+        speech.onend = function() {
+          console.log("Finished speaking");
+        };
+        
+        window.speechSynthesis.speak(speech);
+      }
+    }
+
+    // Close modal if clicked outside
+    window.addEventListener('click', function(event) {
+      const modal = document.getElementById("bookingModal");
+      if (event.target === modal) {
+        closeModal();
+      }
+    });
+
+    // Set minimum date to tomorrow
+    const dateInput = document.getElementById("date");
+    const tomorrow = new Date();
+    tomorrow.setDate(tomorrow.getDate() + 1);
+    dateInput.min = tomorrow.toISOString().split('T')[0];
+
+    // Initialize the application when the page loads
+    window.addEventListener('load', initApp);
+  </script>
+</body>
+</html>
