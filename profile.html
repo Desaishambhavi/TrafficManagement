@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>User Profile - Parking (Gradient Dark Theme)</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: linear-gradient(135deg, rgba(0, 212, 255, 0.2), rgba(0, 0, 0, 0.9));
+      color: #f3f4f6;
+      margin: 0;
+      padding: 20px;
+      min-height: 100vh;
+    }
+    .container {
+      max-width: 1000px;
+      margin: 0 auto;
+    }
+    .card {
+      background: rgba(31, 41, 55, 0.9);
+      border: 1px solid #374151;
+      border-radius: 16px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.6);
+      margin-bottom: 20px;
+      padding: 20px;
+      backdrop-filter: blur(6px);
+    }
+    .card h2, .card h3 {
+      margin-top: 0;
+      color: #e0f7ff;
+    }
+    .user-info {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .parking-list {
+      display: grid;
+      gap: 15px;
+    }
+    .parking-item {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      border: 1px solid #374151;
+      padding: 12px;
+      border-radius: 12px;
+      background: rgba(17, 24, 39, 0.85);
+      transition: box-shadow 0.2s, transform 0.2s;
+    }
+    .parking-item:hover {
+      box-shadow: 0 4px 16px rgba(0,212,255,0.4);
+      transform: translateY(-2px);
+    }
+    .parking-details p {
+      margin: 0;
+    }
+    .parking-details p:nth-child(2) {
+      font-size: 14px;
+      color: #9ca3af;
+    }
+    .map {
+      width: 100%;
+      height: 300px;
+      border: 2px solid #00d4ff;
+      border-radius: 12px;
+      margin-top: 15px;
+      box-shadow: 0 0 20px rgba(0,212,255,0.6);
+      background: #0a0a0a; /* fallback background */
+    }
+    .btn {
+      background: linear-gradient(135deg, #00d4ff, #2563eb);
+      
+      color: white;
+      border: none;
+      padding: 8px 14px;
+      border-radius: 8px;
+      cursor: pointer;
+      font-size: 14px;
+      transition: background 0.2s, transform 0.2s;
+    }
+    .btn:hover {
+      background: linear-gradient(135deg, #00aacc, #1d4ed8);
+      transform: scale(1.05);
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <!-- User Info -->
+    <div class="card">
+      <h2>Welcome, John Doe</h2>
+      <div class="user-info">
+        <p>You have booked <b>3</b> parkings</p>
+      </div>
+    </div>
+
+    <!-- Bangalore -->
+    <div class="card">
+      <h3>Nearby Parkings in Bangalore</h3>
+      <div class="parking-list">
+        <div class="parking-item">
+          <div class="parking-details">
+            <p><b>MG Road Parking</b></p>
+            <p>150m away · 20 spots left</p>
+          </div>
+          <button class="btn">Book</button>
+        </div>
+        <div class="parking-item">
+          <div class="parking-details">
+            <p><b>Brigade Road Lot</b></p>
+            <p>300m away · 10 spots left</p>
+          </div>
+          <button class="btn">Book</button>
+        </div>
+      </div>
+      <iframe class="map" 
+        src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3888.001373646826!2d77.60530921535317!3d12.97679381840352!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x3bae167cc214f1b3%3A0x3c6cf6a3d2ea2981!2sMG%20Road%2C%20Bengaluru!5e0!3m2!1sen!2sin!4v1693911021000!5m2!1sen!2sin" 
+        allowfullscreen="" loading="lazy">
+      </iframe>
+    </div>
+
+    <!-- Belgaum -->
+    <div class="card">
+      <h3>Nearby Parkings in Belgaum</h3>
+      <div class="parking-list">
+        <div class="parking-item">
+          <div class="parking-details">
+            <p><b>Khanapur Road Parking</b></p>
+            <p>100m away · 15 spots left</p>
+          </div>
+          <button class="btn">Book</button>
+        </div>
+        <div class="parking-item">
+          <div class="parking-details">
+            <p><b>Ramdev Galli Lot</b></p>
+            <p>250m away · 8 spots left</p>
+          </div>
+          <button class="btn">Book</button>
+        </div>
+      </div>
+      <iframe class="map" 
+        src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3899.244237538956!2d74.5157266153453!3d15.84969578902792!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x3bbf66f4a2b8d22d%3A0x88cfc3d93e5464d3!2sRamdev%20Galli%2C%20Belagavi!5e0!3m2!1sen!2sin!4v1693911122000!5m2!1sen!2sin" 
+        allowfullscreen="" loading="lazy">
+      </iframe>
+    </div>
+
+    <!-- Pune -->
+    <div class="card">
+      <h3>Nearby Parkings in Pune</h3>
+      <div class="parking-list">
+        <div class="parking-item">
+          <div class="parking-details">
+            <p><b>JM Road Parking</b></p>
+            <p>180m away · 25 spots left</p>
+          </div>
+          <button class="btn">Book</button>
+        </div>
+        <div class="parking-item">
+          <div class="parking-details">
+            <p><b>FC Road Lot</b></p>
+            <p>400m away · 12 spots left</p>
+          </div>
+          <button class="btn">Book</button>
+        </div>
+      </div>
+      <iframe class="map" 
+        src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3783.333572388295!2d73.84259831543203!3d18.5204300730577!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x3bc2c0682f35ff4b%3A0xdaa4bb7a8a798edc!2sJM%20Road%2C%20Pune!5e0!3m2!1sen!2sin!4v1693911223000!5m2!1sen!2sin" 
+        allowfullscreen="" loading="lazy">
+      </iframe>
+    </div>
+  </div>
+</body>
+</html>
